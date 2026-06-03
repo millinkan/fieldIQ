@@ -22,11 +22,13 @@ steps:
     name: gcr.io/cloud-builders/docker
     args:
       - build
+      - -f
+      - backend/Dockerfile
       - -t
       - ${_AR_HOST}/${PROJECT_ID}/${_REPOSITORY}/api:${SHORT_SHA}
       - -t
       - ${_AR_HOST}/${PROJECT_ID}/${_REPOSITORY}/api:latest
-      - ./backend
+      - .
 
   # ── 2. Pytest inside the image (mock model — fast, no GPU) ───────────────
   - id: test-api
@@ -72,7 +74,7 @@ steps:
       - --min-instances=0
       - --max-instances=${_MAX_INSTANCES}
       - --cpu-throttling
-      - --set-env-vars=LOG_LEVEL=INFO,ENFORCE_CREDITS=false,ENFORCE_API_KEY=false,ENFORCE_RATE_LIMIT=false,LIVE_DATA_PROVIDER=mock,CORS_ORIGINS=*,MC_SIMULATIONS=1000,WEB_CONCURRENCY=1,MODEL_PATH=/app/data/models/match_mlp.pt,SCALER_PATH=/app/data/models/scaler.joblib
+      - --set-env-vars=LOG_LEVEL=INFO,ENFORCE_CREDITS=false,ENFORCE_API_KEY=false,ENFORCE_RATE_LIMIT=false,LIVE_DATA_PROVIDER=mock,CORS_ORIGINS=*,MC_SIMULATIONS=1000,WEB_CONCURRENCY=1,SERVE_FRONTEND=true,MODEL_PATH=/app/data/models/match_mlp.pt,SCALER_PATH=/app/data/models/scaler.joblib
     waitFor: [push-api]
 
 images:

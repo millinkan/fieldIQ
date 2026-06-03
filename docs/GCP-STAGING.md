@@ -152,7 +152,7 @@ curl -H "X-API-Key: demo" "$STAGING/v1/v3/psychological/BRA"
 
 Open Swagger: `{STAGING_URL}/docs`
 
-> **Note:** Staging is **API only** (no nginx frontend). Use Swagger or curl. Full UI runs on Hetzner via `docker compose`.
+> **Note:** Staging serves the **dashboard at `/`** (Vite build baked into the API image). Swagger remains at `/docs`.
 
 ---
 

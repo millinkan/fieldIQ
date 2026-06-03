@@ -35,6 +35,8 @@ class Settings(BaseSettings):
     RATE_LIMIT_PER_MINUTE: int = 120
     LOG_LEVEL: str = "INFO"
     CACHE_TTL_SIMULATION: int = 3600
+    SERVE_FRONTEND: bool = True
+    STATIC_DIR: str = "/app/static"
 
     class Config:
         env_file = ".env"

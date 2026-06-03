@@ -74,7 +74,7 @@ docker compose --profile test run --rm test
 
 ## GCP Staging (test before Hetzner production)
 
-Use Google Cloud to **build, test, and host a staging API** — Cloud Run scales to zero when idle (low cost).
+Use Google Cloud to **build, test, and host staging** (API + dashboard on one URL) — Cloud Run scales to zero when idle (low cost).
 
 ```bash
 # One-time setup

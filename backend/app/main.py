@@ -1,7 +1,10 @@
+from pathlib import Path
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import logging
 
@@ -110,10 +113,33 @@ def health():
     }
 
 
-@app.get("/")
-def root():
-    return {
-        "message": f"FieldIQ Pro API v{__version__} — visit /docs for Swagger UI",
-        "docs": "/docs",
-        "health": "/health",
-    }
+def _frontend_static_dir() -> Path | None:
+    if not settings.SERVE_FRONTEND:
+        return None
+    candidates = [
+        Path(settings.STATIC_DIR),
+        Path(__file__).resolve().parents[2] / "static",
+    ]
+    for directory in candidates:
+        if (directory / "index.html").is_file():
+            return directory
+    return None
+
+
+_static_dir = _frontend_static_dir()
+if _static_dir is not None:
+    logger.info("Serving dashboard from %s", _static_dir)
+    app.mount(
+        "/",
+        StaticFiles(directory=str(_static_dir), html=True),
+        name="frontend",
+    )
+else:
+
+    @app.get("/")
+    def root():
+        return {
+            "message": f"FieldIQ Pro API v{__version__} — visit /docs for Swagger UI",
+            "docs": "/docs",
+            "health": "/health",
+        }
