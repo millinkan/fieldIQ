@@ -1,6 +1,6 @@
 # FieldIQ Pro v3 — WC 2026 Predictive Intelligence Platform
 
-Enterprise-grade football analytics: PyTorch MLP match prediction, 48-team Monte Carlo simulation, PDV discipline engine, SRR bench depth, and four contextual intelligence layers — deployable in one command with full test coverage.
+Enterprise-grade football analytics: PyTorch MLP match prediction, 48-team Monte Carlo simulation, PDV discipline engine, SRR bench depth, and five contextual intelligence layers — deployable in one command with full test coverage.
 
 ## Competitive Positioning
 
@@ -34,6 +34,8 @@ fieldiq/
 │   └── requirements.txt
 ├── frontend/                    # Vite + vanilla JS dashboard
 ├── docker-compose.yml           # backend + frontend + redis + test profile
+├── cloudbuild.yaml              # GCP: build → pytest → Cloud Run staging
+├── docs/GCP-STAGING.md          # GCP staging setup (test before Hetzner)
 ├── deploy.sh
 └── .env.example
 ```
@@ -69,6 +71,29 @@ pytest tests/ -v
 # Docker (PyTorch from Google Deep Learning Container — recommended)
 docker compose --profile test run --rm test
 ```
+
+## GCP Staging (test before Hetzner production)
+
+Use Google Cloud to **build, test, and host a staging API** — Cloud Run scales to zero when idle (low cost).
+
+```bash
+# One-time setup
+chmod +x scripts/gcp-setup.sh scripts/gcp-deploy-staging.sh
+./scripts/gcp-setup.sh YOUR_GCP_PROJECT_ID
+
+# Build + pytest + deploy Cloud Run staging
+gcloud builds submit --config=cloudbuild.yaml .
+```
+
+**Windows:** `powershell -File scripts/gcp-setup.ps1 -ProjectId YOUR_GCP_PROJECT_ID`
+
+Full guide: **[docs/GCP-STAGING.md](docs/GCP-STAGING.md)**
+
+| Environment | Purpose |
+|-------------|---------|
+| **GCP Cloud Run** | Staging API — `/docs`, `/v1/*`, auto pytest on build |
+| **Hetzner VPS** | Production — full UI + API + Redis (`docker compose up -d`) |
+| **Local Docker** | Development — `./deploy.sh dev` |
 
 ## PyTorch Installation
 
@@ -211,4 +236,5 @@ See `.env.example` for full list. Key settings:
 ./deploy.sh rebuild    # Clean rebuild
 ./deploy.sh status     # Container status
 docker compose --profile test run --rm test   # Run test suite
+gcloud builds submit --config=cloudbuild.yaml .   # GCP staging deploy
 ```
