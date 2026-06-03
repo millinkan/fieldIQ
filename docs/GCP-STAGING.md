@@ -197,6 +197,8 @@ gcloud run services update fieldiq-staging \
 | Cloud Build permission denied on deploy | Re-run `./scripts/gcp-setup.sh` (grants Cloud Build → Cloud Run) |
 | First request 503 / slow | Cold start + model init (~1–2 min); retry `/health` |
 | Port 8080 vs 8000 | Cloud Run uses **8080**; image entrypoint reads `$PORT` |
+| 4 workers training on startup | Fixed: `--workers 1` + model **baked in Docker build** (not at request time) |
+| Logs show `bootstrapping v3` every cold start | Redeploy with latest Dockerfile — should say `Loading saved v3 model` |
 | Tests pass locally, fail in Cloud Build | Check Cloud Build logs; same image runs pytest |
 | `Artifact Registry` not found | Run setup script or create repo manually in Console |
 | Build timeout | Default is 10 min; increase in trigger settings if needed |

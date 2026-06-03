@@ -23,6 +23,12 @@ COPY . .
 RUN mkdir -p /app/data/models /app/data/statsbomb /app/data/training && \
     chmod +x /app/docker-entrypoint.sh
 
+# Bake v3 weights once at image build (avoids 4x training on Cloud Run cold start)
+ENV MODEL_PATH=/app/data/models/match_mlp.pt \
+    SCALER_PATH=/app/data/models/scaler.joblib \
+    BOOTSTRAP_EPOCHS=15
+RUN python -c "from app.core.model_init import init_model; init_model()"
+
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=120s \

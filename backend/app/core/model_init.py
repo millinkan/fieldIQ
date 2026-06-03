@@ -110,14 +110,15 @@ def _bootstrap_training(n_features: int):
     )
     model = MatchMLP(n_features=n_features)
     opt   = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-4)
-    sched = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, patience=5, verbose=False)
+    sched = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, patience=5)
     crit  = nn.CrossEntropyLoss()
     best_loss, best_state = float("inf"), None
 
     X_val = torch.FloatTensor(X_sc[split:])
     y_val = torch.LongTensor(y[split:])
 
-    for ep in range(80):
+    max_epochs = int(os.getenv("BOOTSTRAP_EPOCHS", "80"))
+    for ep in range(max_epochs):
         model.train()
         ep_loss = 0.0
         for xb, yb in loader:
