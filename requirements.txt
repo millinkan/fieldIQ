@@ -1,0 +1,2 @@
+# Cloud Run / buildpack entry — installs backend dependencies from repo root
+-r backend/requirements-prod.txt

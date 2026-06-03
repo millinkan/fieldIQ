@@ -8,22 +8,24 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
-    # CPU inference by default in compose; GPU available when nvidia-runtime is attached
+    PORT=8080 \
     CUDA_VISIBLE_DEVICES=""
 
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends curl git && \
     rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements-prod.txt requirements.txt ./
+RUN pip install --no-cache-dir -r requirements-prod.txt && \
+    python -c "import httpx; print('httpx OK', httpx.__version__)"
 
 COPY . .
-RUN mkdir -p /app/data/models /app/data/statsbomb /app/data/training
+RUN mkdir -p /app/data/models /app/data/statsbomb /app/data/training && \
+    chmod +x /app/docker-entrypoint.sh
 
-EXPOSE 8000
+EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=120s \
+    CMD sh -c 'curl -f http://localhost:${PORT:-8080}/health || exit 1'
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
