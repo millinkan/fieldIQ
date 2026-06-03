@@ -1,0 +1,5 @@
+# PyTorch GPU wheels (CUDA 12.1) — local GPU training
+# Install: pip install -r requirements-pytorch-gpu.txt
+--extra-index-url https://download.pytorch.org/whl/cu121
+torch==2.3.0
+torchvision==0.18.0

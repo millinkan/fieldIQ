@@ -1,0 +1,76 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./backend
+    container_name: fieldiq-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - model-data:/app/data/models
+      - statsbomb-data:/app/data/statsbomb
+      - training-data:/app/data/training
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MODEL_PATH=/app/data/models/match_mlp.pt
+      - SCALER_PATH=/app/data/models/scaler.joblib
+      - STATSBOMB_DATA_DIR=/app/data/statsbomb
+      - TRAINING_DATA_DIR=/app/data/training
+      - LIVE_DATA_PROVIDER=${LIVE_DATA_PROVIDER:-mock}
+      - API_SPORTS_KEY=${API_SPORTS_KEY:-}
+      - SPORTMONKS_KEY=${SPORTMONKS_KEY:-}
+      - FOOTYSTATS_API_KEY=${FOOTYSTATS_API_KEY:-demo}
+      - REDIS_URL=redis://redis:6379
+      - ENFORCE_CREDITS=${ENFORCE_CREDITS:-false}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - CORS_ORIGINS=http://localhost,http://localhost:80,http://localhost:3000
+    depends_on:
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  test:
+    build: ./backend
+    container_name: fieldiq-test
+    profiles: ["test"]
+    environment:
+      - MODEL_PATH=/tmp/fieldiq_test/match_mlp.pt
+      - SCALER_PATH=/tmp/fieldiq_test/scaler.joblib
+      - ENFORCE_CREDITS=false
+      - LOG_LEVEL=WARNING
+    command: pytest tests/ -v --tb=short
+    volumes:
+      - ./backend:/app
+
+  frontend:
+    build: ./frontend
+    container_name: fieldiq-ui
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_BASE=http://localhost:8000
+
+  redis:
+    image: redis:7-alpine
+    container_name: fieldiq-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+volumes:
+  model-data:
+  redis-data:
+  statsbomb-data:
+  training-data:

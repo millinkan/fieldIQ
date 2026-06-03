@@ -1,0 +1,7 @@
+# PyTorch CPU wheels — local dev (python.org installs; NOT Microsoft Store Python)
+# Install AFTER requirements.txt:
+#   pip install -r requirements-pytorch-cpu.txt
+--extra-index-url https://download.pytorch.org/whl/cpu
+numpy==1.26.4
+torch==2.3.0+cpu
+torchvision==0.18.0+cpu
