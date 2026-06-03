@@ -65,7 +65,12 @@ def model_architecture():
             "chemistry_synergy",
             "momentum_clutch",
             "tactical_matchup",
+            "psychological_context",
         ],
+        "psychological_overlay": {
+            "morale": "Targeted abuse / focus decay on penalties & pressure passing",
+            "circadian": "Late-night activity compounding on physical fatigue (additive, capped +8%)",
+        },
     }
 
 

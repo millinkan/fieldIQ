@@ -45,6 +45,32 @@ def test_v3_fatigue(client):
     assert "cumulative_fatigue" in r.json()
 
 
+def test_v3_psychological_team(client):
+    r = client.get("/v1/v3/psychological/BRA?match_number=3&rest_hours=72")
+    assert r.status_code == 200
+    data = r.json()
+    assert data["layer"] == "psychological_context"
+    assert "morale" in data
+    assert "circadian" in data
+
+
+def test_v3_psychological_player_vinicius(client):
+    r = client.get("/v1/v3/psychological/player/vinicius")
+    assert r.status_code == 200
+    assert r.json()["targeted_morale"]["active"] is True
+
+
+def test_full_analysis_includes_layer5(client):
+    r = client.post("/v1/v3/full-analysis", json={
+        "team_a": {"id": "BRA", "name": "Brazil"},
+        "team_b": {"id": "FRA", "name": "France"},
+        "match_number": 3,
+        "enable_psychological": True,
+    })
+    assert r.status_code == 200
+    assert "layer_5_psychological" in r.json()["layers"]
+
+
 def test_pdv_scores(client):
     r = client.get("/v1/pdv/scores")
     assert r.status_code == 200

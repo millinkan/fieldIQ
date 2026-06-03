@@ -181,7 +181,8 @@ export function renderIntelligence() {
     <div class="kicker">V3 · Contextual Intelligence</div>
     <div class="panel-title">Pre-Match Full Analysis</div>
     <p style="font-size:12px;color:var(--muted);margin-bottom:1rem">
-      Four layers beyond static averages: fatigue & travel, club chemistry, momentum & clutch, tactical matchups.
+      Five layers: fatigue & travel, club chemistry, momentum & clutch, tactical matchups,
+      and Layer 5 psychological context (morale + circadian overlay on physical fatigue).
     </p>
     <button class="btn btn-primary" id="run-analysis-btn">Run BRA vs FRA Analysis</button>
     <div id="intel-results" style="margin-top:1rem"></div>
@@ -206,7 +207,7 @@ export function renderModel(arch, rankings) {
 
     <div class="metrics">
       <div class="met"><div class="met-val g">48</div><div class="met-lbl">Teams</div></div>
-      <div class="met"><div class="met-val s">4</div><div class="met-lbl">Intel Layers</div></div>
+      <div class="met"><div class="met-val s">5</div><div class="met-lbl">Intel Layers</div></div>
       <div class="met"><div class="met-val a">${nFeat}</div><div class="met-lbl">Features</div></div>
       <div class="met"><div class="met-val r">10k</div><div class="met-lbl">MC Runs</div></div>
     </div>

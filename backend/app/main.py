@@ -38,7 +38,8 @@ app = FastAPI(
         "WC 2026 Predictive Intelligence Platform — v3\n\n"
         "Enterprise-grade football analytics: MLP match prediction, Monte Carlo "
         "tournament simulation, PDV discipline engine, SRR bench depth, and four "
-        "contextual intelligence layers (fatigue, chemistry, momentum, tactical).\n\n"
+        "four contextual intelligence layers (fatigue, chemistry, momentum, tactical) "
+        "plus Layer 5 psychological context (morale + circadian overlay).\n\n"
         "Multi-provider data ingestion: API-Sports, Sportmonks, FootyStats, StatsBomb."
     ),
     version=__version__,
@@ -101,7 +102,7 @@ def health():
         "service": "fieldiq-api",
         "version": __version__,
         "features": N_FEATURES,
-        "layers": ["fatigue_travel", "chemistry_synergy", "momentum_clutch", "tactical_matchup"],
+        "layers": ["fatigue_travel", "chemistry_synergy", "momentum_clutch", "tactical_matchup", "psychological_context"],
         "cache": cache_health(),
         "auth_enforced": settings.ENFORCE_API_KEY,
         "rate_limit_enforced": settings.ENFORCE_RATE_LIMIT,

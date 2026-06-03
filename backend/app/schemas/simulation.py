@@ -19,6 +19,7 @@ class LayerToggles(BaseModel):
     chemistry: bool = True
     momentum: bool = True
     tactical: bool = True
+    psychological: bool = True
 
 
 class SimulateRequest(BaseModel):
@@ -33,6 +34,7 @@ class SimulateRequest(BaseModel):
     enable_chemistry: bool = True
     enable_momentum: bool = True
     enable_tactical: bool = True
+    enable_psychological: bool = True
     use_cache: bool = True
 
     @property
@@ -52,12 +54,16 @@ class SimulateRequest(BaseModel):
             chemistry=self.enable_chemistry,
             momentum=self.enable_momentum,
             tactical=self.enable_tactical,
+            psychological=self.enable_psychological,
         )
 
     def cache_payload(self) -> dict:
         return {
             "n": self.n_simulations,
             "w": [self.elo_weight, self.form_weight, self.pdv_weight, self.xg_weight, self.srr_weight],
-            "l": [self.enable_fatigue, self.enable_chemistry, self.enable_momentum, self.enable_tactical],
+            "l": [
+                self.enable_fatigue, self.enable_chemistry, self.enable_momentum,
+                self.enable_tactical, self.enable_psychological,
+            ],
             "i": self.injuries or {},
         }

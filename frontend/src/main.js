@@ -365,13 +365,22 @@ async function runIntelligence() {
       team_a: { id: 'BRA', name: 'Brazil', elo: 2091, xg: 2.3, pdv: 1.2 },
       team_b: { id: 'FRA', name: 'France', elo: 2005, xg: 2.1, pdv: 1.8 },
       match_number: 3,
+      rest_hours_a: 72,
+      enable_psychological: true,
       players_a: state.players,
       players_b: [],
     })
-    state.intelligenceData = res
+    const psych = res.layers?.layer_5_psychological || {}
     out.innerHTML = `
       <div class="card"><div class="card-title">Pre-Match Edge Score</div>
         <div style="font-family:var(--font-mono);font-size:1.4rem;color:var(--lime)">${res.edge_score} · ${res.edge_label}</div>
+      </div>
+      <div class="card"><div class="card-title">Layer 5 · Psychological Context</div>
+        <div style="font-size:12px;color:var(--muted)">
+          BRA focus penalty: ${psych.team_a_focus_penalty_pct ?? 0}% ·
+          circadian uplift: +${psych.team_a_circadian_uplift ?? 0}<br>
+          Flagged morale: ${(psych.team_a_flagged_morale || []).map(p => p.name).join(', ') || 'none'}
+        </div>
       </div>
       <div class="card"><div class="card-title">Layer Breakdown</div>
         <pre style="font-size:10px;color:var(--muted);overflow:auto">${JSON.stringify(res.layers, null, 2)}</pre>

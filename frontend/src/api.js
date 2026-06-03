@@ -33,6 +33,8 @@ export const api = {
   credits:        ()       => req('GET',  '/credits/balance?tier=pro'),
   endpoints:      ()       => req('GET',  '/credits/endpoints'),
   fatigue:        (tid, n) => req('GET',  `/v3/fatigue/${tid}?match_number=${n}`),
+  psychological: (tid, n=3) => req('GET',  `/v3/psychological/${tid}?match_number=${n}&rest_hours=72`),
+  psychologicalPlayer: (pid) => req('GET',  `/v3/psychological/player/${pid}`),
   fullAnalysis:   (body)   => req('POST', '/v3/full-analysis', body),
   dataSources:    ()       => req('GET',  '/model/data-sources'),
   fixtures:       (cid=1)  => req('GET',  `/model/fixtures?competition_id=${cid}`),

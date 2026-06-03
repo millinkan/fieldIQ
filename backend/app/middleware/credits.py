@@ -22,6 +22,7 @@ ENDPOINT_COSTS: dict[str, int] = {
     "/v1/srr/rankings": 1,
     "/v1/model/rankings": 1,
     "/v1/v3/full-analysis": 5,
+    "/v1/v3/psychological": 2,
     "/v1/v3/tactical": 2,
     "/v1/v3/chemistry": 2,
     "/v1/model/train": 0,

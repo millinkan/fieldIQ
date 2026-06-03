@@ -100,7 +100,9 @@ Docs: [Google Deep Learning Containers — PyTorch](https://cloud.google.com/dee
 | POST | `/v1/squad/synergy` | 3 | Roster-adjusted synergy vector |
 | POST | `/v1/pdv/cascade` | 2 | Suspension cascade simulation |
 | GET | `/v1/srr/rankings` | 1 | Dynamic Squad Robustness Rating |
-| GET | `/v1/v3/fatigue/{team_id}` | 1 | Travel decay analysis |
+| GET | `/v1/v3/psychological/{team_id}` | 2 | Morale vector + circadian overlay context |
+| GET | `/v1/v3/psychological/player/{id}` | 1 | Player-level psychological breakdown |
+| GET | `/v1/v3/fatigue/{team_id}` | 1 | Travel decay & fatigue analysis |
 | GET | `/v1/model/architecture` | 0 | MLP v3 architecture (35 features) |
 | POST | `/v1/model/train` | 0 | Trigger training pipeline |
 | GET | `/v1/model/fixtures` | 0 | Upcoming fixtures from live provider |
@@ -124,6 +126,9 @@ curl -X POST http://localhost/v1/tournament/simulate \
     "srr_weight": 0.10,
     "enable_fatigue": true,
     "enable_chemistry": true,
+    "enable_momentum": true,
+    "enable_tactical": true,
+    "enable_psychological": true,
     "injuries": {"BRA": ["vinicius", "casemiro"]}
   }'
 ```
@@ -140,6 +145,18 @@ Input(35) → Linear(512) → BatchNorm → ReLU → Dropout(0.3)
 
 Features 0–22: structural (ELO, xG, PDV, SRR, form, etc.)
 Features 23–34: v3 intelligence (fatigue, chemistry, momentum, tactical)
+
+## Layer 5 — Psychological Context
+
+Layer 5 is an **overlay**, not a replacement for physical fatigue or injury data:
+
+| Signal | Engine | Effect |
+|--------|--------|--------|
+| **A — Targeted abuse / morale** | `psychological_engine` → `momentum_engine` | −3% to −5% focus decay on penalties & pressure passing when incident + toxicity spike align |
+| **B — Late-night activity** | `psychological_engine` → `fatigue_engine` | Circadian compounding on `cumulative_fatigue` (capped at +8%) when late sessions + elevated base load |
+
+Toggle with `enable_psychological: true/false` on simulate and full-analysis requests.
+Demo signals live in `backend/app/services/psychological_engine.py` (swap for live NLP adapters in production).
 
 ## Data Providers
 

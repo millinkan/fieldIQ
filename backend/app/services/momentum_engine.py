@@ -73,7 +73,10 @@ def get_momentum_profile(team_id: str) -> Dict:
     return {**DEFAULT_MOMENTUM, **TEAM_MOMENTUM_PROFILES.get(team_id, {})}
 
 
-def compute_penalty_composite(players: List[Dict]) -> float:
+def compute_penalty_composite(
+    players: List[Dict],
+    focus_penalty: float = 0.0,
+) -> float:
     """
     Compute squad-level penalty conversion score from individual player
     high-pressure penalty statistics.
@@ -85,7 +88,7 @@ def compute_penalty_composite(players: List[Dict]) -> float:
     Returns a composite score [0-1] representing squad penalty threat.
     """
     if not players:
-        return 0.70
+        return max(0.65, 0.70 * (1.0 - focus_penalty))
 
     total_weight = 0.0
     weighted_sum = 0.0
@@ -97,7 +100,11 @@ def compute_penalty_composite(players: List[Dict]) -> float:
         weighted_sum += weight * rate
         total_weight += weight
 
-    return round(weighted_sum / max(total_weight, 0.01), 4)
+    composite = weighted_sum / max(total_weight, 0.01)
+    if focus_penalty > 0:
+        from app.services.psychological_engine import morale_penalty_factor
+        composite *= morale_penalty_factor(focus_penalty)
+    return round(composite, 4)
 
 
 def compute_goal_response_delta(
@@ -150,7 +157,11 @@ def compute_goal_response_delta(
     }
 
 
-def compute_clutch_rating(team_id: str, players: Optional[List[Dict]] = None) -> Dict:
+def compute_clutch_rating(
+    team_id: str,
+    players: Optional[List[Dict]] = None,
+    focus_penalty: float = 0.0,
+) -> Dict:
     """
     Composite clutch/psychological resilience rating.
     Combines goal response, comeback rate, late-game surge, and penalty score.
@@ -159,9 +170,9 @@ def compute_clutch_rating(team_id: str, players: Optional[List[Dict]] = None) ->
     """
     profile = get_momentum_profile(team_id)
     penalty_score = (
-        compute_penalty_composite(players)
+        compute_penalty_composite(players, focus_penalty)
         if players
-        else profile["penalty_composite"]
+        else profile["penalty_composite"] * (1.0 - focus_penalty * 0.5)
     )
 
     # Weighted clutch composite
@@ -179,6 +190,7 @@ def compute_clutch_rating(team_id: str, players: Optional[List[Dict]] = None) ->
         "comeback_rate":          profile["comeback_rate"],
         "late_game_surge":        profile["late_surge"],
         "penalty_composite":      round(penalty_score, 4),
+        "morale_focus_penalty":   round(focus_penalty, 4),
         "penalty_sub_advice":     _penalty_sub_advice(players or []),
     }
 
@@ -224,11 +236,13 @@ def compute_clutch_differential(
     team_a_id: str, team_b_id: str,
     team_a_players: Optional[List[Dict]] = None,
     team_b_players: Optional[List[Dict]] = None,
+    focus_penalty_a: float = 0.0,
+    focus_penalty_b: float = 0.0,
 ) -> float:
     """
     Returns a single differential clutch feature for the feature vector.
     Positive = team_a is more clutch than team_b.
     """
-    ca = compute_clutch_rating(team_a_id, team_a_players)
-    cb = compute_clutch_rating(team_b_id, team_b_players)
+    ca = compute_clutch_rating(team_a_id, team_a_players, focus_penalty_a)
+    cb = compute_clutch_rating(team_b_id, team_b_players, focus_penalty_b)
     return round(ca["clutch_rating"] - cb["clutch_rating"], 4)

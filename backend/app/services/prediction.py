@@ -26,7 +26,12 @@ from app.schemas.simulation import LayerToggles, SimulationWeights
 
 from app.services.fatigue_engine import compute_travel_decay
 from app.services.chemistry_engine import compute_synergy_differential, compute_xt_compatibility
-from app.services.momentum_engine import compute_clutch_differential, get_momentum_profile
+from app.services.momentum_engine import (
+    compute_clutch_differential,
+    compute_penalty_composite,
+    get_momentum_profile,
+)
+from app.services.psychological_engine import compute_squad_morale, morale_pass_completion_factor
 from app.services.tactical_engine import (
     compute_tactical_differential,
     compute_press_efficacy,
@@ -90,6 +95,12 @@ def build_feature_vector(
 ) -> np.ndarray:
     """Construct the full 35-dimensional differential feature vector."""
     layers = config.layers if config else LayerToggles()
+    use_psych = layers.psychological
+
+    morale_a = compute_squad_morale(players_a) if use_psych and players_a else None
+    morale_b = compute_squad_morale(players_b) if use_psych and players_b else None
+    focus_a = morale_a["squad_focus_penalty"] if morale_a else 0.0
+    focus_b = morale_b["squad_focus_penalty"] if morale_b else 0.0
 
     def pdv(t):
         return t.get("pdv", 0)
@@ -126,8 +137,16 @@ def build_feature_vector(
 
     fatigue_diff = rest_decay_diff = tz_diff = 0.0
     if layers.fatigue:
-        fa = compute_travel_decay(team_a.get("id", ""), match_number, ko_round, rest_hours_a)
-        fb = compute_travel_decay(team_b.get("id", ""), match_number, ko_round, rest_hours_b)
+        fa = compute_travel_decay(
+            team_a.get("id", ""), match_number, ko_round, rest_hours_a,
+            players=players_a,
+            apply_psychological_circadian=use_psych,
+        )
+        fb = compute_travel_decay(
+            team_b.get("id", ""), match_number, ko_round, rest_hours_b,
+            players=players_b,
+            apply_psychological_circadian=use_psych,
+        )
         fatigue_diff = fb["cumulative_fatigue"] - fa["cumulative_fatigue"]
         rest_decay_diff = fb["rest_decay"] - fa["rest_decay"]
         tz_diff = float(fb["tz_shift_hours"] - fa["tz_shift_hours"]) / 12.0
@@ -138,17 +157,29 @@ def build_feature_vector(
         synergy_diff = compute_synergy_differential(players_a, players_b)
         xt_a = compute_xt_compatibility(players_a)
         xt_b = compute_xt_compatibility(players_b)
+        if use_psych:
+            xt_a["xt_offensive_compat"] *= morale_pass_completion_factor(focus_a)
+            xt_b["xt_offensive_compat"] *= morale_pass_completion_factor(focus_b)
         xt_diff = xt_a["xt_offensive_compat"] - xt_b["xt_offensive_compat"]
 
     clutch_diff = grd_diff = penalty_diff = 0.0
     if layers.momentum:
         clutch_diff = compute_clutch_differential(
-            team_a.get("id", ""), team_b.get("id", ""), players_a, players_b
+            team_a.get("id", ""), team_b.get("id", ""), players_a, players_b,
+            focus_penalty_a=focus_a, focus_penalty_b=focus_b,
         )
         pa = get_momentum_profile(team_a.get("id", ""))
         pb = get_momentum_profile(team_b.get("id", ""))
         grd_diff = pa["goal_response_delta"] - pb["goal_response_delta"]
-        penalty_diff = pa["penalty_composite"] - pb["penalty_composite"]
+        if players_a and players_b:
+            penalty_diff = (
+                compute_penalty_composite(players_a, focus_a)
+                - compute_penalty_composite(players_b, focus_b)
+            )
+        else:
+            penalty_diff = pa["penalty_composite"] - pb["penalty_composite"]
+            if use_psych:
+                penalty_diff -= (focus_a - focus_b) * 0.3
 
     tactical_diff = press_eff_diff = high_line_flag = late_drop_diff = 0.0
     if layers.tactical:
@@ -483,6 +514,7 @@ def run_monte_carlo(
                 ("chemistry_synergy", layers.chemistry),
                 ("momentum_clutch", layers.momentum),
                 ("tactical_matchup", layers.tactical),
+                ("psychological_context", layers.psychological),
             ] if on
         ],
         "weights_used": {
@@ -497,5 +529,6 @@ def run_monte_carlo(
             "chemistry": layers.chemistry,
             "momentum": layers.momentum,
             "tactical": layers.tactical,
+            "psychological": layers.psychological,
         },
     }

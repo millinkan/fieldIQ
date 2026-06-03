@@ -51,6 +51,8 @@ def api_endpoints():
             {"method": "GET",  "path": "/v1/model/rankings",       "credits_per_call": 1,   "desc": "Champion probability rankings"},
             {"method": "GET",  "path": "/v1/tournament/champion-odds", "credits_per_call": 5, "desc": "Quick champion odds"},
             {"method": "GET",  "path": "/v1/v3/fatigue/{team_id}",     "credits_per_call": 1,  "desc": "Travel decay & fatigue analysis"},
+            {"method": "GET",  "path": "/v1/v3/psychological/{team_id}", "credits_per_call": 2, "desc": "Morale + circadian psychological context"},
+            {"method": "GET",  "path": "/v1/v3/psychological/player/{id}", "credits_per_call": 1, "desc": "Player psychological breakdown"},
             {"method": "POST", "path": "/v1/v3/full-analysis",        "credits_per_call": 5,  "desc": "Full pre-match intelligence report"},
             {"method": "POST", "path": "/v1/v3/tactical",              "credits_per_call": 2,  "desc": "Tactical style matchup matrix"},
             {"method": "POST", "path": "/v1/model/train",              "credits_per_call": 0,  "desc": "Trigger model retraining pipeline"},

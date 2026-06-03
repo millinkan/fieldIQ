@@ -92,6 +92,9 @@ def compute_travel_decay(
     match_number: int,
     ko_round: Optional[str] = None,
     rest_hours: float = 120.0,
+    players: Optional[List[Dict]] = None,
+    apply_psychological_circadian: bool = False,
+    hours_to_kickoff: float = 48.0,
 ) -> Dict[str, float]:
     """
     Compute the full physical fatigue state for a team before a given match.
@@ -174,7 +177,7 @@ def compute_travel_decay(
     sprint_speed_mult    = max(0.70, 1.0 - cumulative * 0.25)
     defensive_recovery   = max(0.72, 1.0 - cumulative * 0.22)
 
-    return {
+    result = {
         "travel_decay_score":  round(travel_decay, 4),
         "rest_decay":          round(rest_decay, 4),
         "altitude_penalty":    round(altitude_penalty, 4),
@@ -186,6 +189,16 @@ def compute_travel_decay(
         "defensive_recovery":  round(defensive_recovery, 4),
         "current_city":        curr_city,
     }
+
+    if apply_psychological_circadian and players:
+        from app.services.psychological_engine import (
+            compute_squad_circadian,
+            apply_circadian_to_fatigue,
+        )
+        circadian = compute_squad_circadian(players, rest_hours, cumulative, hours_to_kickoff)
+        result = apply_circadian_to_fatigue(result, circadian)
+
+    return result
 
 
 def compute_fatigue_differential(
