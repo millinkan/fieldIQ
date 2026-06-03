@@ -28,12 +28,22 @@ class Settings(BaseSettings):
     RAPIDFUZZ_THRESHOLD: int = 88
 
     DEFAULT_API_KEY: str = "demo"
+    API_KEYS: str = "demo,analyst,enterprise"
+    ENFORCE_API_KEY: bool = False
     ENFORCE_CREDITS: bool = False
+    ENFORCE_RATE_LIMIT: bool = False
+    RATE_LIMIT_PER_MINUTE: int = 120
     LOG_LEVEL: str = "INFO"
     CACHE_TTL_SIMULATION: int = 3600
 
     class Config:
         env_file = ".env"
+
+    @property
+    def valid_api_keys(self) -> set[str]:
+        keys = {k.strip() for k in self.API_KEYS.split(",") if k.strip()}
+        keys.add(self.DEFAULT_API_KEY)
+        return keys
 
 
 settings = Settings()

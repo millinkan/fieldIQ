@@ -49,3 +49,53 @@ def test_pdv_scores(client):
     r = client.get("/v1/pdv/scores")
     assert r.status_code == 200
     assert len(r.json()["players"]) > 0
+
+
+def test_pdv_cascade_not_found(client):
+    r = client.post("/v1/pdv/cascade", json={"player_id": "nonexistent"})
+    assert r.status_code == 404
+    assert r.json()["code"] == "NOT_FOUND"
+
+
+def test_pdv_cascade_ok(client):
+    r = client.post("/v1/pdv/cascade", json={"player_id": "casemiro", "match_number": 3})
+    assert r.status_code == 200
+    data = r.json()
+    assert data["player_id"] == "casemiro"
+    assert "suspension_prob" in data
+
+
+def test_roster_players_synthetic(client):
+    r = client.get("/v1/squad/players/FRA")
+    assert r.status_code == 200
+    data = r.json()
+    assert data["count"] == 11
+    assert data["players"][0]["team_id"] == "FRA"
+
+
+def test_roster_synergy_opponent(client):
+    r = client.post("/v1/squad/synergy", json={
+        "team_id": "BRA",
+        "opponent_id": "FRA",
+        "player_statuses": [{"player_id": p["id"], "status": "ok"} for p in [
+            {"id": "alisson"}, {"id": "militao"}, {"id": "marquinhos"},
+        ]],
+    })
+    assert r.status_code == 200
+    data = r.json()
+    assert "opponent_adjustments" in data
+    assert data["opponent_id"] == "FRA"
+
+
+def test_fixtures_mock(client):
+    r = client.get("/v1/model/fixtures")
+    assert r.status_code == 200
+    data = r.json()
+    assert "fixtures" in data
+    assert data["provider"] == "mock"
+
+
+def test_credits_balance(client):
+    r = client.get("/v1/credits/balance?tier=pro", headers={"X-API-Key": "demo"})
+    assert r.status_code == 200
+    assert "credits_remaining" in r.json()

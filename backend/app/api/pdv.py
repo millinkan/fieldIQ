@@ -1,9 +1,9 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import Optional
-import numpy as np
 
-from app.data.seed_data import PDV_COHORT, PLAYERS
+from app.data.seed_data import PDV_COHORT, PLAYERS, TEAMS, get_team_squad
+from app.core.exceptions import NotFoundError
 
 router = APIRouter()
 
@@ -29,15 +29,26 @@ def get_pdv_scores():
     return {"players": PDV_COHORT}
 
 
+def _find_player(player_id: str) -> Optional[dict]:
+    for p in PLAYERS:
+        if p["id"] == player_id:
+            return p
+    for team in TEAMS:
+        for p in get_team_squad(team["id"]):
+            if p["id"] == player_id:
+                return p
+    return None
+
+
 @router.post("/cascade")
 def pdv_cascade(req: CascadeRequest):
     """
     Given a player's current tournament status, simulate the
     suspension probability and downstream team performance impact.
     """
-    player = next((p for p in PLAYERS if p["id"] == req.player_id), None)
+    player = _find_player(req.player_id)
     if not player:
-        return {"error": f"Player '{req.player_id}' not found"}
+        raise NotFoundError("Player", req.player_id)
 
     pdv = compute_pdv(
         player["yellow_per90"], player["reds_season"],

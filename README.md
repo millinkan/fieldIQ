@@ -103,6 +103,8 @@ Docs: [Google Deep Learning Containers — PyTorch](https://cloud.google.com/dee
 | GET | `/v1/v3/fatigue/{team_id}` | 1 | Travel decay analysis |
 | GET | `/v1/model/architecture` | 0 | MLP v3 architecture (35 features) |
 | POST | `/v1/model/train` | 0 | Trigger training pipeline |
+| GET | `/v1/model/fixtures` | 0 | Upcoming fixtures from live provider |
+| GET | `/v1/model/injuries/{team_id}` | 0 | Live injury list |
 | GET | `/v1/credits/balance` | 0 | Credit pool status |
 
 Pass `X-API-Key: demo` header on all requests.
@@ -174,6 +176,11 @@ See `.env.example` for full list. Key settings:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| `DEFAULT_API_KEY` | demo | Fallback key when header omitted |
+| `API_KEYS` | demo,analyst,enterprise | Comma-separated valid keys |
+| `ENFORCE_API_KEY` | false | Require valid `X-API-Key` on `/v1/*` |
+| `ENFORCE_RATE_LIMIT` | false | Per-IP rate limiting (Redis-backed) |
+| `RATE_LIMIT_PER_MINUTE` | 120 | Max requests per IP per minute |
 | `ENFORCE_CREDITS` | false | Enable credit deduction on paid endpoints |
 | `REDIS_URL` | redis://redis:6379 | Simulation result cache |
 | `MC_SIMULATIONS` | 10000 | Max simulations per request |

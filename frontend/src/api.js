@@ -35,4 +35,7 @@ export const api = {
   fatigue:        (tid, n) => req('GET',  `/v3/fatigue/${tid}?match_number=${n}`),
   fullAnalysis:   (body)   => req('POST', '/v3/full-analysis', body),
   dataSources:    ()       => req('GET',  '/model/data-sources'),
+  fixtures:       (cid=1)  => req('GET',  `/model/fixtures?competition_id=${cid}`),
+  injuries:       (tid)    => req('GET',  `/model/injuries/${tid}`),
+  trainStatus:    ()       => req('GET',  '/model/train/status'),
 }

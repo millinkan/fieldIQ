@@ -199,8 +199,16 @@ function recalcSynergy() {
   renderSynBars(active, injured)
 }
 
-function renderSynBars(active, injured) {
-  const dims = [
+function renderSynBars(active, injured, apiDims = null) {
+  const injN = injured.length
+  const dimMap = apiDims ? [
+    {l:'Attacking synergy',  v: apiDims.attacking_synergy, c:'var(--lime)'},
+    {l:'Defensive shape',    v: apiDims.defensive_shape, c:'var(--sky)'},
+    {l:'Press cohesion',     v: apiDims.press_cohesion, c:'var(--lime)'},
+    {l:'Set piece threat',   v: apiDims.set_piece_threat, c:'var(--amber)'},
+    {l:'Tactical flex',      v: apiDims.tactical_flexibility, c:'var(--sky)'},
+    {l:'PDV risk-adjusted',  v: apiDims.pdv_adjusted_risk, c:'var(--red)'},
+  ] : [
     {l:'Attacking synergy',  base:82, c:'var(--lime)'},
     {l:'Defensive shape',    base:78, c:'var(--sky)'},
     {l:'Press cohesion',     base:71, c:'var(--lime)'},
@@ -210,13 +218,15 @@ function renderSynBars(active, injured) {
   ]
   const container = document.getElementById('syn-bars')
   if (!container) return
-  container.innerHTML = dims.map(d => {
-    const v = Math.max(10, Math.min(99, d.base - injured.length * (3 + Math.random() * 3)))
+  container.innerHTML = dimMap.map(d => {
+    const v = apiDims
+      ? Math.round(d.v)
+      : Math.max(10, Math.min(99, d.base - injN * 3.5))
     return `
       <div class="syn-row">
         <span class="syn-lbl">${d.l}</span>
-        <div class="syn-trk"><div class="syn-fill" style="width:${Math.round(v)}%;background:${d.c}"></div></div>
-        <span class="syn-val" style="color:${d.c}">${Math.round(v)}</span>
+        <div class="syn-trk"><div class="syn-fill" style="width:${v}%;background:${d.c}"></div></div>
+        <span class="syn-val" style="color:${d.c}">${v}</span>
       </div>`
   }).join('')
 }
@@ -231,6 +241,11 @@ async function callSynergyAPI() {
     setEl('xg-proj', res.xg_projected)
     setEl('press-v', res.press_intensity + '%')
     setEl('xga-v', res.xga_exposed)
+    if (res.synergy_dimensions) {
+      const active = state.players.filter(p => (state.playerStatuses[p.id] || 'ok') === 'ok')
+      const injured = state.players.filter(p => state.playerStatuses[p.id] === 'injured')
+      renderSynBars(active, injured, res.synergy_dimensions)
+    }
   } catch (e) {
     console.warn('Synergy API error, using client calc:', e.message)
   }

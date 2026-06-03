@@ -7,6 +7,8 @@ os.environ.setdefault("SKIP_MODEL_INIT", "1")
 os.environ.setdefault("MODEL_PATH", os.path.join(os.environ.get("TEMP", "/tmp"), "fieldiq_test", "match_mlp.pt"))
 os.environ.setdefault("SCALER_PATH", os.path.join(os.environ.get("TEMP", "/tmp"), "fieldiq_test", "scaler.joblib"))
 os.environ.setdefault("ENFORCE_CREDITS", "false")
+os.environ.setdefault("ENFORCE_API_KEY", "false")
+os.environ.setdefault("ENFORCE_RATE_LIMIT", "false")
 os.environ.setdefault("LOG_LEVEL", "WARNING")
 
 

@@ -45,14 +45,14 @@ class SimulationConfig:
 def apply_feature_weights(feat: np.ndarray, weights: SimulationWeights, layers: LayerToggles) -> np.ndarray:
     """Scale feature groups by user weights relative to defaults."""
     out = feat.copy()
-    scale = {
-        ELO_INDICES: weights.elo_weight / DEFAULT_WEIGHTS["elo"],
-        FORM_INDICES: weights.form_weight / DEFAULT_WEIGHTS["form"],
-        PDV_INDICES: weights.pdv_weight / DEFAULT_WEIGHTS["pdv"],
-        XG_INDICES: weights.xg_weight / DEFAULT_WEIGHTS["xg"],
-        SRR_INDICES: weights.srr_weight / DEFAULT_WEIGHTS["srr"],
-    }
-    for indices, factor in scale.items():
+    groups = [
+        (ELO_INDICES, weights.elo_weight / DEFAULT_WEIGHTS["elo"]),
+        (FORM_INDICES, weights.form_weight / DEFAULT_WEIGHTS["form"]),
+        (PDV_INDICES, weights.pdv_weight / DEFAULT_WEIGHTS["pdv"]),
+        (XG_INDICES, weights.xg_weight / DEFAULT_WEIGHTS["xg"]),
+        (SRR_INDICES, weights.srr_weight / DEFAULT_WEIGHTS["srr"]),
+    ]
+    for indices, factor in groups:
         for i in indices:
             if i < len(out):
                 out[i] *= factor

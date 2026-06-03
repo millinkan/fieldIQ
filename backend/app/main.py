@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 from contextlib import asynccontextmanager
 import logging
 
@@ -9,8 +10,11 @@ from app.api import simulate, roster, pdv, squad, model_info, credits, training,
 from app.core.model_init import init_model
 from app.core.config import settings, N_FEATURES
 from app.core.cache import cache_health
+from app.core.exceptions import FieldIQError
 from app.middleware.request_logging import RequestLoggingMiddleware
 from app.middleware.credits import CreditsMiddleware
+from app.middleware.auth import APIKeyMiddleware
+from app.middleware.rate_limit import RateLimitMiddleware
 
 logging.basicConfig(
     level=getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO),
@@ -43,15 +47,16 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-app.add_middleware(CreditsMiddleware)
-app.add_middleware(RequestLoggingMiddleware)
-app.add_middleware(
-    CORSMiddleware,
+app.add_middleware(CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(RateLimitMiddleware)
+app.add_middleware(CreditsMiddleware)
+app.add_middleware(APIKeyMiddleware)
+app.add_middleware(RequestLoggingMiddleware)
 
 app.include_router(simulate.router, prefix="/v1/tournament", tags=["Tournament"])
 app.include_router(roster.router, prefix="/v1/squad", tags=["Squad"])
@@ -61,6 +66,23 @@ app.include_router(model_info.router, prefix="/v1/model", tags=["Model"])
 app.include_router(credits.router, prefix="/v1/credits", tags=["Credits"])
 app.include_router(training.router, prefix="/v1/model", tags=["Training"])
 app.include_router(v3_intelligence.router, prefix="/v1/v3", tags=["V3 Intelligence"])
+
+
+@app.exception_handler(FieldIQError)
+async def fieldiq_error_handler(request: Request, exc: FieldIQError):
+    return JSONResponse(status_code=exc.status_code, content=exc.detail)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={
+            "error": "Validation failed",
+            "code": "VALIDATION_ERROR",
+            "detail": exc.errors(),
+        },
+    )
 
 
 @app.exception_handler(Exception)
@@ -81,6 +103,9 @@ def health():
         "features": N_FEATURES,
         "layers": ["fatigue_travel", "chemistry_synergy", "momentum_clutch", "tactical_matchup"],
         "cache": cache_health(),
+        "auth_enforced": settings.ENFORCE_API_KEY,
+        "rate_limit_enforced": settings.ENFORCE_RATE_LIMIT,
+        "credits_enforced": settings.ENFORCE_CREDITS,
     }
 
 
