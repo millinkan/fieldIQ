@@ -8,13 +8,56 @@ GitHub → Cloud Build → Artifact Registry → Cloud Run (fieldiq-staging)
                                     test /health /docs /v1/*
 ```
 
-## Cost control
+## Cost control (GCP will NOT run dry if you follow this)
 
-| Setting | Value | Why |
-|---------|-------|-----|
-| `min-instances: 0` | Cloud Run sleeps when idle | No cost when not testing |
-| Staging only | No production traffic | Avoid surprise bills |
-| Billing alert | Set $5 in GCP Console | Early warning |
+**Idle Cloud Run = ~$0.** You only pay for builds and active requests.
+
+| Safeguard | This repo |
+|-----------|-----------|
+| `min-instances: 0` | Yes — in `cloudbuild.yaml` |
+| `max-instances: 1` | Yes — staging cap |
+| `cpu: 1` | Yes — not 2 vCPU |
+| CPU throttling when idle | Yes |
+| No 24/7 VM / GPU / GKE | You only use Cloud Build + Run |
+| MC cap on staging | `MC_SIMULATIONS=1000` env |
+
+### Do this once (5 minutes)
+
+1. GCP Console → **Billing** → **Budgets** → create **$5** budget with email alerts at 50%, 90%, 100%  
+2. After deploy, verify:
+
+```bash
+./scripts/gcp-cost-check.sh
+# Windows:
+powershell -File scripts/gcp-cost-check.ps1
+```
+
+### Stop GCP charges when not testing
+
+```bash
+./scripts/gcp-shutdown-staging.sh
+# Windows:
+powershell -File scripts/gcp-shutdown-staging.ps1
+```
+
+Deletes Cloud Run only (~$0). Images stay in Artifact Registry (pennies). Redeploy with `gcloud builds submit` anytime.
+
+### Expected spend (light staging use)
+
+| Activity | ~Cost/month |
+|----------|-------------|
+| Cloud Run idle | **$0** |
+| 3–5 deploys | **$0–2** |
+| Casual API tests | **$0–2** |
+| **Total typical** | **Under $5** |
+
+### Never do on GCP (these drain accounts)
+
+- `min-instances: 1` or higher on Cloud Run  
+- Leaving a Compute Engine / GPU VM running  
+- Vertex AI GPU training left on  
+- Memorystore Redis  
+- Heavy 10k simulations all day
 
 First deploy builds the Google PyTorch DLC image (~5–10 min). Later deploys are faster.
 

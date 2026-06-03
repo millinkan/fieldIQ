@@ -89,6 +89,8 @@ gcloud builds submit --config=cloudbuild.yaml .
 
 Full guide: **[docs/GCP-STAGING.md](docs/GCP-STAGING.md)**
 
+**GCP cost safety:** `min-instances=0`, max 1 instance — idle ≈ $0. Set a **$5 billing budget** in GCP Console. When done testing: `powershell -File scripts/gcp-shutdown-staging.ps1`
+
 | Environment | Purpose |
 |-------------|---------|
 | **GCP Cloud Run** | Staging API — `/docs`, `/v1/*`, auto pytest on build |
