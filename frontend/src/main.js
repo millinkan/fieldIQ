@@ -4,6 +4,8 @@ import {
   renderModel, renderPipeline, renderBlueprint, renderAPI, renderIntelligence,
   pdvColor,
 } from './panels.js'
+import { renderCommandCenter, bootCommandCenter } from './command_center.js'
+import { renderDeepIntelligence, bootDeepIntelligence } from './deep_panel.js'
 
 // ── State ──────────────────────────────────────────────────
 const state = {
@@ -90,6 +92,18 @@ function renderTab(tab) {
     case 'pdv':       div.innerHTML = renderPDV(state.pdvData);                      break
     case 'srr':       div.innerHTML = renderSRR(normSRR(), state.srrScenario);        break
     case 'intelligence': div.innerHTML = renderIntelligence();                       break
+    case 'command':
+      div.innerHTML = renderCommandCenter()
+      main.appendChild(div)
+      bootCommandCenter()
+      wireTabEvents(tab)
+      return
+    case 'deep':
+      div.innerHTML = renderDeepIntelligence()
+      main.appendChild(div)
+      bootDeepIntelligence()
+      wireTabEvents(tab)
+      return
     case 'model':     div.innerHTML = renderModel(state.modelArch, state.modelRankings); break
     case 'pipeline':  div.innerHTML = renderPipeline();                              break
     case 'blueprint': div.innerHTML = renderBlueprint();                             break

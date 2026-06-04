@@ -9,7 +9,10 @@ from contextlib import asynccontextmanager
 import logging
 
 from app import __version__
-from app.api import simulate, roster, pdv, squad, model_info, credits, training, v3_intelligence
+from app.api import (
+    simulate, roster, pdv, squad, model_info, credits, training, v3_intelligence,
+    command_center, deep_intelligence,
+)
 from app.core.model_init import init_model
 from app.core.config import settings, N_FEATURES
 from app.core.cache import cache_health
@@ -70,6 +73,8 @@ app.include_router(model_info.router, prefix="/v1/model", tags=["Model"])
 app.include_router(credits.router, prefix="/v1/credits", tags=["Credits"])
 app.include_router(training.router, prefix="/v1/model", tags=["Training"])
 app.include_router(v3_intelligence.router, prefix="/v1/v3", tags=["V3 Intelligence"])
+app.include_router(command_center.router, prefix="/v1/command", tags=["Command Center"])
+app.include_router(deep_intelligence.router, prefix="/v1/deep", tags=["Deep Intelligence"])
 
 
 @app.exception_handler(FieldIQError)
@@ -105,7 +110,10 @@ def health():
         "service": "fieldiq-api",
         "version": __version__,
         "features": N_FEATURES,
-        "layers": ["fatigue_travel", "chemistry_synergy", "momentum_clutch", "tactical_matchup", "psychological_context"],
+        "layers": [
+            "fatigue_travel", "chemistry_synergy", "momentum_clutch", "tactical_matchup",
+            "psychological_context", "command_center", "deep_intelligence",
+        ],
         "cache": cache_health(),
         "auth_enforced": settings.ENFORCE_API_KEY,
         "rate_limit_enforced": settings.ENFORCE_RATE_LIMIT,

@@ -26,6 +26,12 @@ ENDPOINT_COSTS: dict[str, int] = {
     "/v1/v3/tactical": 2,
     "/v1/v3/chemistry": 2,
     "/v1/model/train": 0,
+    "/v1/command/delta": 3,
+    "/v1/command/fixtures": 0,
+    "/v1/deep/pathways": 5,
+    "/v1/deep/sensitivity": 4,
+    "/v1/deep/asymmetry": 4,
+    "/v1/deep/full": 12,
 }
 
 DEMO_BALANCES: dict[str, dict] = {

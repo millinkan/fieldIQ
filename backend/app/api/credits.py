@@ -58,6 +58,12 @@ def api_endpoints():
             {"method": "POST", "path": "/v1/model/train",              "credits_per_call": 0,  "desc": "Trigger model retraining pipeline"},
             {"method": "GET",  "path": "/v1/model/data-sources",       "credits_per_call": 0,  "desc": "Live data provider status"},
             {"method": "GET",  "path": "/v1/credits/balance",          "credits_per_call": 0,  "desc": "Credit pool status"},
+            {"method": "POST", "path": "/v1/command/delta",           "credits_per_call": 3,  "desc": "Model vs market delta dashboard"},
+            {"method": "GET",  "path": "/v1/command/fixtures",        "credits_per_call": 0,  "desc": "Command center fixture list"},
+            {"method": "POST", "path": "/v1/deep/pathways",           "credits_per_call": 5,  "desc": "Pathways & ranges scenario clusters"},
+            {"method": "POST", "path": "/v1/deep/sensitivity",        "credits_per_call": 4,  "desc": "What-if shock sensitivity matrix"},
+            {"method": "POST", "path": "/v1/deep/asymmetry",          "credits_per_call": 4,  "desc": "Structural asymmetry rating"},
+            {"method": "POST", "path": "/v1/deep/full",               "credits_per_call": 12, "desc": "Full deep intelligence (all three layers)"},
         ],
         "burst_policy": {
             "match_day_multiplier": 3.0,

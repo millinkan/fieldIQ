@@ -125,10 +125,12 @@ powershell -File scripts/gcp-deploy-staging.ps1
 
 Cloud Build will:
 
-1. Build `backend/Dockerfile` (Google PyTorch DLC base)  
-2. Run `pytest` with `SKIP_MODEL_INIT=1`  
+1. Build `backend/Dockerfile` from repo root (Vite UI + Google PyTorch DLC + baked model)  
+2. Run `pytest` with `SKIP_MODEL_INIT=1` (35+ tests)  
 3. Push image to Artifact Registry  
 4. Deploy **fieldiq-staging** on Cloud Run (4 GiB RAM, scales to zero)
+
+First build often takes **15–25 minutes** (PyTorch image + npm + model bake). `cloudbuild.yaml` timeout is **40 minutes**.
 
 ---
 
@@ -148,9 +150,13 @@ STAGING=https://fieldiq-staging-xxxxx-ew.a.run.app
 curl "$STAGING/health"
 curl -H "X-API-Key: demo" "$STAGING/v1/tournament/teams"
 curl -H "X-API-Key: demo" "$STAGING/v1/v3/psychological/BRA"
+curl -H "X-API-Key: demo" -X POST "$STAGING/v1/command/delta" \
+  -H "Content-Type: application/json" \
+  -d '{"home_id":"BRA","away_id":"FRA","match_number":5}'
 ```
 
-Open Swagger: `{STAGING_URL}/docs`
+Open **dashboard**: `{STAGING_URL}/`  
+Open **Swagger**: `{STAGING_URL}/docs`
 
 > **Note:** Staging serves the **dashboard at `/`** (Vite build baked into the API image). Swagger remains at `/docs`.
 
@@ -201,7 +207,8 @@ gcloud run services update fieldiq-staging \
 | Logs show `bootstrapping v3` every cold start | Redeploy with latest Dockerfile — should say `Loading saved v3 model` |
 | Tests pass locally, fail in Cloud Build | Check Cloud Build logs; same image runs pytest |
 | `Artifact Registry` not found | Run setup script or create repo manually in Console |
-| Build timeout | Default is 10 min; increase in trigger settings if needed |
+| Build timeout | Repo uses `timeout: 2400s` in `cloudbuild.yaml`; first build needs full window |
+| `requirements-prod.txt` empty | Must list prod deps (no pytest); Docker build will fail at `pip install` |
 
 View logs:
 

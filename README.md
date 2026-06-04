@@ -1,6 +1,6 @@
 # FieldIQ Pro v3 — WC 2026 Predictive Intelligence Platform
 
-Enterprise-grade football analytics: PyTorch MLP match prediction, 48-team Monte Carlo simulation, PDV discipline engine, SRR bench depth, and five contextual intelligence layers — deployable in one command with full test coverage.
+Enterprise-grade football analytics: PyTorch MLP match prediction, 48-team Monte Carlo simulation, PDV discipline engine, SRR bench depth, five contextual intelligence layers, Command Center (model vs market delta), and Deep Intelligence (pathways, sensitivity, asymmetry) — deployable in one command with full test coverage.
 
 ## Competitive Positioning
 
@@ -26,7 +26,7 @@ fieldiq/
 │   │   ├── middleware/          # Logging, credits, rate limits
 │   │   ├── models/              # MatchMLP (35 → 512 → 256 → 128 → 64 → 3)
 │   │   ├── schemas/             # Pydantic request/response models
-│   │   ├── services/            # Prediction + 4 intelligence engines
+│   │   ├── services/            # Prediction + intelligence + command/deep engines
 │   │   ├── data_pipeline/       # StatsBomb + live API adapters
 │   │   └── training/            # 3-phase training pipeline
 │   ├── tests/                   # pytest suite

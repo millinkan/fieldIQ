@@ -12,6 +12,8 @@ substitutions:
   _CPU: "1"
   _MAX_INSTANCES: "1"
 
+timeout: 2400s
+
 options:
   # Default builder machine (cheaper than E2_HIGHCPU_8 for occasional deploys)
   logging: CLOUD_LOGGING_ONLY

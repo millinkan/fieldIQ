@@ -40,4 +40,10 @@ export const api = {
   fixtures:       (cid=1)  => req('GET',  `/model/fixtures?competition_id=${cid}`),
   injuries:       (tid)    => req('GET',  `/model/injuries/${tid}`),
   trainStatus:    ()       => req('GET',  '/model/train/status'),
+  commandDelta:   (body)   => req('POST', '/command/delta', body),
+  commandFixtures:()       => req('GET',  '/command/fixtures'),
+  deepPathways:   (body)   => req('POST', '/deep/pathways', body),
+  deepSensitivity:(body)   => req('POST', '/deep/sensitivity', body),
+  deepAsymmetry:  (body)   => req('POST', '/deep/asymmetry', body),
+  deepFull:       (body)   => req('POST', '/deep/full', body),
 }
