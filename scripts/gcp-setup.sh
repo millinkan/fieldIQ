@@ -19,6 +19,8 @@ gcloud config set project "$PROJECT_ID"
 
 echo "▶ Enabling APIs..."
 gcloud services enable \
+  serviceusage.googleapis.com \
+  storage.googleapis.com \
   artifactregistry.googleapis.com \
   cloudbuild.googleapis.com \
   run.googleapis.com \
@@ -47,6 +49,33 @@ gcloud projects add-iam-policy-binding "$PROJECT_ID" \
   --member="serviceAccount:${CB_SA}" \
   --role="roles/iam.serviceAccountUser" \
   --quiet >/dev/null
+
+gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+  --member="serviceAccount:${CB_SA}" \
+  --role="roles/storage.admin" \
+  --quiet >/dev/null
+
+gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+  --member="serviceAccount:${CB_SA}" \
+  --role="roles/artifactregistry.writer" \
+  --quiet >/dev/null
+
+ACCOUNT="$(gcloud config get-value account 2>/dev/null || true)"
+if [[ -n "$ACCOUNT" && "$ACCOUNT" != "(unset)" ]]; then
+  echo "▶ IAM for deploy user ($ACCOUNT)..."
+  for ROLE in roles/serviceusage.serviceUsageConsumer roles/cloudbuild.builds.editor roles/storage.admin; do
+    gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+      --member="user:${ACCOUNT}" \
+      --role="$ROLE" \
+      --quiet >/dev/null || true
+  done
+fi
+
+BUCKET="${PROJECT_ID}_cloudbuild"
+if ! gsutil ls -b "gs://${BUCKET}" &>/dev/null; then
+  echo "▶ Creating Cloud Build bucket gs://${BUCKET} ..."
+  gsutil mb -p "$PROJECT_ID" -l "$REGION" "gs://${BUCKET}/" || true
+fi
 
 echo "▶ Reminder: set a billing budget alert in GCP Console (recommended: \$5)"
 echo ""

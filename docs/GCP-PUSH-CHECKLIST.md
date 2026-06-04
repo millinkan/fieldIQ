@@ -34,6 +34,16 @@ git status
 git push origin main
 ```
 
+## 2b. If `gcloud builds submit` says forbidden on `PROJECT_cloudbuild`
+
+```bash
+chmod +x scripts/gcp-fix-build-permissions.sh
+./scripts/gcp-fix-build-permissions.sh fieldiq-498301
+# wait 60 seconds
+```
+
+Requires **Owner** or **Editor** on project `fieldiq-498301`.
+
 ## 3. Deploy
 
 From repo root **`fieldiq-pro-v3/fieldiq`**:
