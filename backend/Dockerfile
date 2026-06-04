@@ -1,16 +1,17 @@
-# FieldIQ — API image with optional baked dashboard (Vite → /app/static)
+# FieldIQ — API image with baked dashboard (Vite → /app/static)
 # Build from repo root: docker build -f backend/Dockerfile .
+# Uses python:slim + CPU PyTorch (reliable in Cloud Build; DLC image is ~10GB and often fails).
 
 # ── Frontend (Vite) ──────────────────────────────────────────────────────────
 FROM node:20-alpine AS frontend
 WORKDIR /fe
-COPY frontend/package.json ./
-RUN npm install
+COPY frontend/package.json frontend/package-lock.json* ./
+RUN npm ci 2>/dev/null || npm install
 COPY frontend/ ./
 RUN npm run build
 
-# ── Backend (Google Deep Learning Container + PyTorch) ───────────────────────
-FROM us-docker.pkg.dev/deeplearning-platform-release/gcr.io/pytorch-cu121.2-3.py310
+# ── Backend ──────────────────────────────────────────────────────────────────
+FROM python:3.11-slim-bookworm
 
 WORKDIR /app
 
@@ -22,13 +23,16 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     SERVE_FRONTEND=true \
     STATIC_DIR=/app/static
 
-USER root
-RUN apt-get update && apt-get install -y --no-install-recommends curl git && \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl git build-essential && \
     rm -rf /var/lib/apt/lists/*
 
-COPY backend/requirements-prod.txt backend/requirements.txt ./
+# PyTorch CPU wheels first (not in requirements-prod.txt)
+RUN pip install --no-cache-dir torch==2.3.1 --index-url https://download.pytorch.org/whl/cpu
+
+COPY backend/requirements-prod.txt ./
 RUN pip install --no-cache-dir -r requirements-prod.txt && \
-    python -c "import httpx; print('httpx OK', httpx.__version__)"
+    python -c "import httpx, torch; print('httpx', httpx.__version__, 'torch', torch.__version__)"
 
 COPY backend/ .
 COPY --from=frontend /fe/dist /app/static
@@ -37,7 +41,7 @@ RUN mkdir -p /app/data/models /app/data/statsbomb /app/data/training && \
 
 ENV MODEL_PATH=/app/data/models/match_mlp.pt \
     SCALER_PATH=/app/data/models/scaler.joblib \
-    BOOTSTRAP_EPOCHS=15
+    BOOTSTRAP_EPOCHS=5
 RUN python -c "from app.core.model_init import init_model; init_model()"
 
 EXPOSE 8080

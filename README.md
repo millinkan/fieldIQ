@@ -30,7 +30,7 @@ fieldiq/
 │   │   ├── data_pipeline/       # StatsBomb + live API adapters
 │   │   └── training/            # 3-phase training pipeline
 │   ├── tests/                   # pytest suite
-│   ├── Dockerfile
+│   ├── Dockerfile             # python:slim + CPU PyTorch (Cloud Build friendly)
 │   └── requirements.txt
 ├── frontend/                    # Vite + vanilla JS dashboard
 ├── docker-compose.yml           # backend + frontend + redis + test profile

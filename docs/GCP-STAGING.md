@@ -212,6 +212,7 @@ gcloud run services update fieldiq-staging \
 | `forbidden from accessing the bucket PROJECT_cloudbuild` | Run `./scripts/gcp-fix-build-permissions.sh fieldiq-498301` (or `.ps1`). Needs **Owner/Editor** on the project to add IAM. Wait 60s, retry submit. |
 | `serviceusage.services.use` permission | Same fix script enables Service Usage + grants `serviceUsageConsumer` to your user |
 | `could not parse reference: .../api:` (empty tag) | Fixed: `cloudbuild.yaml` uses `${BUILD_ID}` not `${SHORT_SHA}` (empty on local submit). Pull latest and resubmit. |
+| Step 0 `docker` exited 1 | Usually DLC image pull/OOM. Repo now uses `python:3.11-slim` + CPU PyTorch and `E2_HIGHCPU_8` builder. Pull latest `cloudbuild.yaml` + `backend/Dockerfile`. View logs: `gcloud builds log BUILD_ID` |
 
 View logs:
 

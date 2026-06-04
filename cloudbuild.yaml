@@ -16,7 +16,9 @@ substitutions:
 timeout: 2400s
 
 options:
-  # Default builder machine (cheaper than E2_HIGHCPU_8 for occasional deploys)
+  # Docker build needs RAM for PyTorch bootstrap + image layers
+  machineType: E2_HIGHCPU_8
+  diskSizeGb: 100
   logging: CLOUD_LOGGING_ONLY
 
 steps:
