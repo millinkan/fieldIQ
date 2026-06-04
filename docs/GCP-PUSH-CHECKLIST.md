@@ -10,8 +10,10 @@ Use this before every staging deploy. Work from **`fieldiq-pro-v3/fieldiq`** onl
 - [ ] One-time setup: `powershell -File scripts/gcp-setup.ps1 -ProjectId YOUR_PROJECT_ID`
 
 ```powershell
-gcloud config set project YOUR_PROJECT_ID
+gcloud config set project fieldiq-498301
 ```
+
+Or copy `gcp.project.example` → `gcp.project.local` with your project id (already set locally for `fieldiq-498301`, gitignored).
 
 ## 2. Pre-flight (every deploy)
 

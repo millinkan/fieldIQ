@@ -1,6 +1,7 @@
 # Environment and secrets
 .env
 *.env.local
+gcp.project.local
 
 # Python
 __pycache__/
