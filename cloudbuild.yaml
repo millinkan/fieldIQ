@@ -1,5 +1,6 @@
 # FieldIQ — GCP Cloud Build: test → push → Cloud Run staging
 # Run: gcloud builds submit --config=cloudbuild.yaml .
+# Image tag uses BUILD_ID (always set). SHORT_SHA is empty for local submit.
 # Docs: docs/GCP-STAGING.md
 
 substitutions:
@@ -27,14 +28,14 @@ steps:
       - -f
       - backend/Dockerfile
       - -t
-      - ${_AR_HOST}/${PROJECT_ID}/${_REPOSITORY}/api:${SHORT_SHA}
+      - ${_AR_HOST}/${PROJECT_ID}/${_REPOSITORY}/api:${BUILD_ID}
       - -t
       - ${_AR_HOST}/${PROJECT_ID}/${_REPOSITORY}/api:latest
       - .
 
   # ── 2. Pytest inside the image (mock model — fast, no GPU) ───────────────
   - id: test-api
-    name: ${_AR_HOST}/${PROJECT_ID}/${_REPOSITORY}/api:${SHORT_SHA}
+    name: ${_AR_HOST}/${PROJECT_ID}/${_REPOSITORY}/api:${BUILD_ID}
     entrypoint: bash
     args:
       - -c
@@ -65,7 +66,7 @@ steps:
       - run
       - deploy
       - ${_SERVICE}
-      - --image=${_AR_HOST}/${PROJECT_ID}/${_REPOSITORY}/api:${SHORT_SHA}
+      - --image=${_AR_HOST}/${PROJECT_ID}/${_REPOSITORY}/api:${BUILD_ID}
       - --region=${_REGION}
       - --platform=managed
       - --allow-unauthenticated
@@ -80,5 +81,5 @@ steps:
     waitFor: [push-api]
 
 images:
-  - ${_AR_HOST}/${PROJECT_ID}/${_REPOSITORY}/api:${SHORT_SHA}
+  - ${_AR_HOST}/${PROJECT_ID}/${_REPOSITORY}/api:${BUILD_ID}
   - ${_AR_HOST}/${PROJECT_ID}/${_REPOSITORY}/api:latest
