@@ -193,10 +193,7 @@ def compute_delta(req: DeltaRequest):
 
 
 @router.get("/fixtures")
-def command_center_fixtures():
-from app.data.seed_data import FIXTURES, get_fixtures_by_stage, get_fixtures_by_group
 
-@router.get("/fixtures")
 def command_center_fixtures(stage: str = None, group: str = None):
     """
     Return fixtures for the command center delta grid.
