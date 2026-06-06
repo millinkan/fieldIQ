@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Query
 from app.data.seed_data import TEAMS
+from app.data.seed_data import SRR_DATA, FIXTURES, get_fixtures_by_group
 
 router = APIRouter()
 
@@ -87,3 +88,16 @@ def srr_all():
             "delta": {sc: compute_delta(t, sc) for sc in SCENARIOS},
         })
     return {"teams": teams, "scenarios": SCENARIOS}
+
+
+@router.get("/fixtures/{group}")
+def group_fixtures(group: str):
+    """Return all fixtures for a specific group (A-L)."""
+    fixtures = get_fixtures_by_group(group.upper())
+    if not fixtures:
+        return {"error": f"Group {group.upper()} not found"}
+    return {
+        "group": group.upper(),
+        "fixtures": fixtures,
+        "count": len(fixtures)
+    }
