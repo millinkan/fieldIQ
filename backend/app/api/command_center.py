@@ -8,7 +8,8 @@ from pydantic import BaseModel
 from typing import Dict, List, Optional
 import numpy as np
 
-from app.data.seed_data import TEAMS
+#from app.data.seed_data import TEAMS
+from app.data.seed_data import TEAMS, FIXTURES, get_fixtures_by_stage, get_fixtures_by_group
 from app.core.exceptions import NotFoundError
 from app.services.prediction import predict_match
 from app.services.fatigue_engine import compute_travel_decay
@@ -193,7 +194,6 @@ def compute_delta(req: DeltaRequest):
 
 
 @router.get("/fixtures")
-
 def command_center_fixtures(stage: str = None, group: str = None):
     """
     Return fixtures for the command center delta grid.
