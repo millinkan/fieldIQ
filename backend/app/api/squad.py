@@ -1,6 +1,8 @@
+from app.data.seed_data import TEAMS, FIXTURES, get_fixtures_by_stage, get_fixtures_by_group
+from app.data.seed_data import SRR_DATA, FIXTURES, get_fixtures_by_group
 from fastapi import APIRouter, Query
 from app.data.seed_data import TEAMS
-from app.data.seed_data import SRR_DATA, FIXTURES, get_fixtures_by_group
+
 
 router = APIRouter()
 
@@ -90,14 +92,31 @@ def srr_all():
     return {"teams": teams, "scenarios": SCENARIOS}
 
 
-@router.get("/fixtures/{group}")
-def group_fixtures(group: str):
-    """Return all fixtures for a specific group (A-L)."""
-    fixtures = get_fixtures_by_group(group.upper())
-    if not fixtures:
-        return {"error": f"Group {group.upper()} not found"}
+@router.get("/fixtures")
+def command_center_fixtures(stage: str = None, group: str = None):
+    """
+    Return fixtures for the command center delta grid.
+    - No params: returns all 104 fixtures
+    - ?stage=Group Stage: returns all 72 group matches
+    - ?group=A: returns Group A fixtures only
+    """
+    if group:
+        fixtures = get_fixtures_by_group(group.upper())
+    elif stage:
+        fixtures = get_fixtures_by_stage(stage)
+    else:
+        fixtures = FIXTURES
+
     return {
-        "group": group.upper(),
         "fixtures": fixtures,
-        "count": len(fixtures)
+        "count": len(fixtures),
+        "stages": {
+            "Group Stage": 72,
+            "Round of 32": 16,
+            "Round of 16": 8,
+            "Quarter-finals": 4,
+            "Semi-finals": 2,
+            "Third place": 1,
+            "Final": 1,
+        }
     }
