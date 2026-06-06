@@ -1396,3 +1396,17 @@ SRR_DATA = [
 ]
 
 V3_TEAM_EXTENSIONS: dict = {}  # already inlined into TEAMS dicts above
+
+def get_team_squad(team_id: str) -> List[Dict]:
+    """Return all players for a given team_id."""
+    return [p for p in PLAYERS if p["team_id"] == team_id]
+
+
+def get_player(player_id: str) -> Dict:
+    """Return a single player by id."""
+    return next((p for p in PLAYERS if p["id"] == player_id), {})
+
+
+def get_team(team_id: str) -> Dict:
+    """Return a single team by id."""
+    return next((t for t in TEAMS if t["id"] == team_id), {})
