@@ -1384,29 +1384,206 @@ PDV_COHORT = [
     {"player":"Son Heung-min",     "team":"🇰🇷 KOR","pdv":0.6,"susp_pct":7, "risk":"LOW"},
 ]
 
-SRR_DATA = [
-    {"flag":"🇫🇷","name":"France",     "srr":{"striker":88,"mid":91,"def":85,"gk":78},"delta":{"striker":-3,"mid":-5,"def":-8,"gk":-15}},
-    {"flag":"🇧🇷","name":"Brazil",     "srr":{"striker":71,"mid":83,"def":80,"gk":62},"delta":{"striker":-18,"mid":-9,"def":-12,"gk":-22}},
-    {"flag":"🇪🇸","name":"Spain",      "srr":{"striker":84,"mid":92,"def":87,"gk":80},"delta":{"striker":-7,"mid":-4,"def":-6,"gk":-11}},
-    {"flag":"🇦🇷","name":"Argentina",  "srr":{"striker":58,"mid":76,"def":78,"gk":71},"delta":{"striker":-28,"mid":-14,"def":-10,"gk":-13}},
-    {"flag":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","name":"England",   "srr":{"striker":79,"mid":81,"def":83,"gk":85},"delta":{"striker":-12,"mid":-11,"def":-9,"gk":-8}},
-    {"flag":"🇵🇹","name":"Portugal",   "srr":{"striker":45,"mid":68,"def":72,"gk":74},"delta":{"striker":-35,"mid":-20,"def":-15,"gk":-12}},
-    {"flag":"🇩🇪","name":"Germany",    "srr":{"striker":82,"mid":87,"def":84,"gk":80},"delta":{"striker":-8,"mid":-6,"def":-7,"gk":-10}},
-    {"flag":"🇳🇱","name":"Netherlands","srr":{"striker":80,"mid":83,"def":82,"gk":78},"delta":{"striker":-10,"mid":-8,"def":-9,"gk":-12}},
+
+# ── COMPLETE SRR DATA — all 48 WC 2026 teams ──────────────────────────────
+# srr: Squad Robustness Rating per position (0-100)
+#   Higher = better backup depth at that position
+# delta: % performance drop if key player at that position is lost
+#   Calibrated from squad ratings, positional coverage, backup quality
+SRR_DATA: List[Dict] = [
+    # ── Top 8 by ELO ──────────────────────────────────────────────────────
+    {"flag":"🇫🇷","name":"France",        "id":"FRA","group":"I","srr":{"striker":88,"mid":91,"def":85,"gk":78},"delta":{"striker":-3, "mid":-5, "def":-8, "gk":-15}},
+    {"flag":"🇪🇸","name":"Spain",          "id":"ESP","group":"H","srr":{"striker":84,"mid":92,"def":87,"gk":80},"delta":{"striker":-7, "mid":-4, "def":-6, "gk":-11}},
+    {"flag":"🇦🇷","name":"Argentina",      "id":"ARG","group":"J","srr":{"striker":58,"mid":76,"def":78,"gk":71},"delta":{"striker":-28,"mid":-14,"def":-10,"gk":-13}},
+    {"flag":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","name":"England",        "id":"ENG","group":"L","srr":{"striker":79,"mid":81,"def":83,"gk":85},"delta":{"striker":-12,"mid":-11,"def":-9, "gk":-8}},
+    {"flag":"🇵🇹","name":"Portugal",       "id":"POR","group":"K","srr":{"striker":45,"mid":68,"def":72,"gk":74},"delta":{"striker":-35,"mid":-20,"def":-15,"gk":-12}},
+    {"flag":"🇧🇷","name":"Brazil",         "id":"BRA","group":"C","srr":{"striker":71,"mid":83,"def":80,"gk":62},"delta":{"striker":-18,"mid":-9, "def":-12,"gk":-22}},
+    {"flag":"🇳🇱","name":"Netherlands",    "id":"NED","group":"F","srr":{"striker":80,"mid":83,"def":82,"gk":78},"delta":{"striker":-10,"mid":-8, "def":-9, "gk":-12}},
+    {"flag":"🇲🇦","name":"Morocco",        "id":"MAR","group":"C","srr":{"striker":72,"mid":78,"def":85,"gk":76},"delta":{"striker":-15,"mid":-11,"def":-7, "gk":-10}},
+    # ── Ranks 9–16 ────────────────────────────────────────────────────────
+    {"flag":"🇧🇪","name":"Belgium",        "id":"BEL","group":"G","srr":{"striker":82,"mid":80,"def":76,"gk":72},"delta":{"striker":-8, "mid":-10,"def":-12,"gk":-16}},
+    {"flag":"🇩🇪","name":"Germany",        "id":"GER","group":"E","srr":{"striker":82,"mid":87,"def":84,"gk":80},"delta":{"striker":-8, "mid":-6, "def":-7, "gk":-10}},
+    {"flag":"🇭🇷","name":"Croatia",        "id":"CRO","group":"L","srr":{"striker":75,"mid":82,"def":74,"gk":72},"delta":{"striker":-14,"mid":-8, "def":-13,"gk":-15}},
+    {"flag":"🇨🇴","name":"Colombia",       "id":"COL","group":"K","srr":{"striker":78,"mid":80,"def":72,"gk":70},"delta":{"striker":-12,"mid":-10,"def":-15,"gk":-18}},
+    {"flag":"🇸🇳","name":"Senegal",        "id":"SEN","group":"I","srr":{"striker":74,"mid":76,"def":78,"gk":82},"delta":{"striker":-16,"mid":-14,"def":-12,"gk":-8}},
+    {"flag":"🇲🇽","name":"Mexico",         "id":"MEX","group":"A","srr":{"striker":76,"mid":74,"def":72,"gk":74},"delta":{"striker":-13,"mid":-14,"def":-15,"gk":-13}},
+    {"flag":"🇺🇸","name":"USA",            "id":"USA","group":"D","srr":{"striker":72,"mid":78,"def":75,"gk":74},"delta":{"striker":-16,"mid":-12,"def":-13,"gk":-14}},
+    {"flag":"🇺🇾","name":"Uruguay",        "id":"URU","group":"H","srr":{"striker":60,"mid":74,"def":78,"gk":72},"delta":{"striker":-25,"mid":-16,"def":-11,"gk":-15}},
+    # ── Ranks 17–24 ───────────────────────────────────────────────────────
+    {"flag":"🇯🇵","name":"Japan",          "id":"JPN","group":"F","srr":{"striker":74,"mid":80,"def":76,"gk":74},"delta":{"striker":-14,"mid":-10,"def":-12,"gk":-13}},
+    {"flag":"🇨🇭","name":"Switzerland",   "id":"SUI","group":"B","srr":{"striker":74,"mid":78,"def":80,"gk":76},"delta":{"striker":-14,"mid":-12,"def":-10,"gk":-12}},
+    {"flag":"🇳🇴","name":"Norway",         "id":"NOR","group":"I","srr":{"striker":50,"mid":78,"def":72,"gk":72},"delta":{"striker":-32,"mid":-12,"def":-15,"gk":-15}},
+    {"flag":"🇨🇦","name":"Canada",         "id":"CAN","group":"B","srr":{"striker":70,"mid":72,"def":74,"gk":72},"delta":{"striker":-18,"mid":-16,"def":-14,"gk":-15}},
+    {"flag":"🇦🇹","name":"Austria",        "id":"AUT","group":"J","srr":{"striker":74,"mid":78,"def":76,"gk":72},"delta":{"striker":-14,"mid":-12,"def":-12,"gk":-15}},
+    {"flag":"🏴󠁧󠁢󠁳󠁣󠁴󠁿","name":"Scotland",       "id":"SCO","group":"C","srr":{"striker":72,"mid":76,"def":74,"gk":70},"delta":{"striker":-16,"mid":-13,"def":-14,"gk":-18}},
+    {"flag":"🇪🇨","name":"Ecuador",        "id":"ECU","group":"E","srr":{"striker":68,"mid":74,"def":72,"gk":70},"delta":{"striker":-19,"mid":-14,"def":-15,"gk":-17}},
+    {"flag":"🇹🇷","name":"Turkey",         "id":"TUR","group":"D","srr":{"striker":72,"mid":80,"def":72,"gk":74},"delta":{"striker":-15,"mid":-10,"def":-15,"gk":-13}},
+    # ── Ranks 25–36 ───────────────────────────────────────────────────────
+    {"flag":"🇸🇪","name":"Sweden",         "id":"SWE","group":"F","srr":{"striker":68,"mid":72,"def":72,"gk":70},"delta":{"striker":-20,"mid":-16,"def":-15,"gk":-18}},
+    {"flag":"🇨🇿","name":"Czechia",        "id":"CZE","group":"A","srr":{"striker":72,"mid":70,"def":70,"gk":70},"delta":{"striker":-16,"mid":-17,"def":-17,"gk":-17}},
+    {"flag":"🇧🇦","name":"Bosnia & Herz.", "id":"BIH","group":"B","srr":{"striker":70,"mid":68,"def":66,"gk":64},"delta":{"striker":-18,"mid":-19,"def":-21,"gk":-22}},
+    {"flag":"🇨🇮","name":"Ivory Coast",   "id":"CIV","group":"E","srr":{"striker":70,"mid":72,"def":68,"gk":64},"delta":{"striker":-18,"mid":-15,"def":-19,"gk":-22}},
+    {"flag":"🇰🇷","name":"South Korea",   "id":"KOR","group":"A","srr":{"striker":62,"mid":70,"def":68,"gk":66},"delta":{"striker":-24,"mid":-17,"def":-19,"gk":-19}},
+    {"flag":"🇦🇺","name":"Australia",      "id":"AUS","group":"D","srr":{"striker":62,"mid":66,"def":66,"gk":66},"delta":{"striker":-23,"mid":-20,"def":-20,"gk":-19}},
+    {"flag":"🇿🇦","name":"South Africa",  "id":"RSA","group":"A","srr":{"striker":64,"mid":66,"def":68,"gk":68},"delta":{"striker":-22,"mid":-20,"def":-18,"gk":-18}},
+    {"flag":"🇵🇾","name":"Paraguay",       "id":"PAR","group":"D","srr":{"striker":66,"mid":70,"def":68,"gk":66},"delta":{"striker":-20,"mid":-17,"def":-18,"gk":-20}},
+    {"flag":"🇬🇭","name":"Ghana",          "id":"GHA","group":"L","srr":{"striker":68,"mid":68,"def":64,"gk":62},"delta":{"striker":-19,"mid":-19,"def":-22,"gk":-23}},
+    {"flag":"🇪🇬","name":"Egypt",          "id":"EGY","group":"G","srr":{"striker":60,"mid":66,"def":68,"gk":68},"delta":{"striker":-25,"mid":-20,"def":-18,"gk":-18}},
+    {"flag":"🇮🇷","name":"Iran",           "id":"IRN","group":"G","srr":{"striker":62,"mid":68,"def":66,"gk":66},"delta":{"striker":-23,"mid":-18,"def":-20,"gk":-19}},
+    {"flag":"🇸🇦","name":"Saudi Arabia",  "id":"SAU","group":"H","srr":{"striker":62,"mid":66,"def":64,"gk":66},"delta":{"striker":-22,"mid":-20,"def":-21,"gk":-19}},
+    # ── Ranks 37–48 ───────────────────────────────────────────────────────
+    {"flag":"🇩🇿","name":"Algeria",        "id":"ALG","group":"J","srr":{"striker":66,"mid":68,"def":64,"gk":62},"delta":{"striker":-20,"mid":-18,"def":-21,"gk":-22}},
+    {"flag":"🇹🇳","name":"Tunisia",        "id":"TUN","group":"F","srr":{"striker":64,"mid":66,"def":66,"gk":64},"delta":{"striker":-21,"mid":-19,"def":-19,"gk":-21}},
+    {"flag":"🇨🇩","name":"DR Congo",       "id":"COD","group":"K","srr":{"striker":64,"mid":62,"def":64,"gk":60},"delta":{"striker":-21,"mid":-22,"def":-21,"gk":-24}},
+    {"flag":"🇨🇻","name":"Cape Verde",    "id":"CPV","group":"H","srr":{"striker":60,"mid":62,"def":64,"gk":62},"delta":{"striker":-24,"mid":-22,"def":-21,"gk":-22}},
+    {"flag":"🇶🇦","name":"Qatar",          "id":"QAT","group":"B","srr":{"striker":60,"mid":64,"def":62,"gk":64},"delta":{"striker":-24,"mid":-21,"def":-22,"gk":-20}},
+    {"flag":"🇺🇿","name":"Uzbekistan",    "id":"UZB","group":"K","srr":{"striker":58,"mid":60,"def":60,"gk":56},"delta":{"striker":-26,"mid":-24,"def":-24,"gk":-27}},
+    {"flag":"🇯🇴","name":"Jordan",         "id":"JOR","group":"J","srr":{"striker":56,"mid":58,"def":58,"gk":56},"delta":{"striker":-27,"mid":-25,"def":-25,"gk":-27}},
+    {"flag":"🇮🇶","name":"Iraq",           "id":"IRQ","group":"I","srr":{"striker":56,"mid":58,"def":58,"gk":54},"delta":{"striker":-27,"mid":-25,"def":-25,"gk":-28}},
+    {"flag":"🇳🇿","name":"New Zealand",   "id":"NZL","group":"G","srr":{"striker":58,"mid":58,"def":58,"gk":58},"delta":{"striker":-26,"mid":-25,"def":-25,"gk":-25}},
+    {"flag":"🇨🇼","name":"Curaçao",        "id":"CUW","group":"E","srr":{"striker":56,"mid":58,"def":58,"gk":56},"delta":{"striker":-27,"mid":-25,"def":-25,"gk":-26}},
+    {"flag":"🇭🇹","name":"Haiti",          "id":"HAI","group":"C","srr":{"striker":52,"mid":54,"def":54,"gk":52},"delta":{"striker":-30,"mid":-28,"def":-28,"gk":-30}},
+    {"flag":"🇵🇦","name":"Panama",         "id":"PAN","group":"L","srr":{"striker":54,"mid":56,"def":56,"gk":54},"delta":{"striker":-28,"mid":-26,"def":-26,"gk":-28}},
 ]
 
-V3_TEAM_EXTENSIONS: dict = {}  # already inlined into TEAMS dicts above
+# ── COMPLETE FIXTURE LIST — all 104 WC 2026 matches ───────────────────────
+# Group stage: 72 matches (12 groups x 6 matches each)
+# Knockout:    32 matches (R32:16 + R16:8 + QF:4 + SF:2 + 3rd:1 + Final:1)
+# KO fixtures use TBD for team IDs — resolved dynamically from simulation results
 
-def get_team_squad(team_id: str) -> List[Dict]:
-    """Return all players for a given team_id."""
-    return [p for p in PLAYERS if p["team_id"] == team_id]
+FIXTURES: List[Dict] = [
+    # ── GROUP A: Czechia, Mexico, South Africa, South Korea ───────────────
+    {"id":"A-MD1-1","stage":"Group Stage","group":"A","matchday":1,"home_id":"CZE","away_id":"MEX","ko_round":"Group Stage","match_number":1},
+    {"id":"A-MD1-2","stage":"Group Stage","group":"A","matchday":1,"home_id":"RSA","away_id":"KOR","ko_round":"Group Stage","match_number":1},
+    {"id":"A-MD2-1","stage":"Group Stage","group":"A","matchday":2,"home_id":"CZE","away_id":"RSA","ko_round":"Group Stage","match_number":2},
+    {"id":"A-MD2-2","stage":"Group Stage","group":"A","matchday":2,"home_id":"MEX","away_id":"KOR","ko_round":"Group Stage","match_number":2},
+    {"id":"A-MD3-1","stage":"Group Stage","group":"A","matchday":3,"home_id":"CZE","away_id":"KOR","ko_round":"Group Stage","match_number":3},
+    {"id":"A-MD3-2","stage":"Group Stage","group":"A","matchday":3,"home_id":"MEX","away_id":"RSA","ko_round":"Group Stage","match_number":3},
+    # ── GROUP B: Bosnia & Herz., Canada, Qatar, Switzerland ───────────────
+    {"id":"B-MD1-1","stage":"Group Stage","group":"B","matchday":1,"home_id":"BIH","away_id":"CAN","ko_round":"Group Stage","match_number":1},
+    {"id":"B-MD1-2","stage":"Group Stage","group":"B","matchday":1,"home_id":"QAT","away_id":"SUI","ko_round":"Group Stage","match_number":1},
+    {"id":"B-MD2-1","stage":"Group Stage","group":"B","matchday":2,"home_id":"BIH","away_id":"QAT","ko_round":"Group Stage","match_number":2},
+    {"id":"B-MD2-2","stage":"Group Stage","group":"B","matchday":2,"home_id":"CAN","away_id":"SUI","ko_round":"Group Stage","match_number":2},
+    {"id":"B-MD3-1","stage":"Group Stage","group":"B","matchday":3,"home_id":"BIH","away_id":"SUI","ko_round":"Group Stage","match_number":3},
+    {"id":"B-MD3-2","stage":"Group Stage","group":"B","matchday":3,"home_id":"CAN","away_id":"QAT","ko_round":"Group Stage","match_number":3},
+    # ── GROUP C: Brazil, Haiti, Morocco, Scotland ─────────────────────────
+    {"id":"C-MD1-1","stage":"Group Stage","group":"C","matchday":1,"home_id":"BRA","away_id":"HAI","ko_round":"Group Stage","match_number":1},
+    {"id":"C-MD1-2","stage":"Group Stage","group":"C","matchday":1,"home_id":"MAR","away_id":"SCO","ko_round":"Group Stage","match_number":1},
+    {"id":"C-MD2-1","stage":"Group Stage","group":"C","matchday":2,"home_id":"BRA","away_id":"MAR","ko_round":"Group Stage","match_number":2},
+    {"id":"C-MD2-2","stage":"Group Stage","group":"C","matchday":2,"home_id":"HAI","away_id":"SCO","ko_round":"Group Stage","match_number":2},
+    {"id":"C-MD3-1","stage":"Group Stage","group":"C","matchday":3,"home_id":"BRA","away_id":"SCO","ko_round":"Group Stage","match_number":3},
+    {"id":"C-MD3-2","stage":"Group Stage","group":"C","matchday":3,"home_id":"MAR","away_id":"HAI","ko_round":"Group Stage","match_number":3},
+    # ── GROUP D: Australia, Paraguay, Turkey, USA ─────────────────────────
+    {"id":"D-MD1-1","stage":"Group Stage","group":"D","matchday":1,"home_id":"AUS","away_id":"PAR","ko_round":"Group Stage","match_number":1},
+    {"id":"D-MD1-2","stage":"Group Stage","group":"D","matchday":1,"home_id":"TUR","away_id":"USA","ko_round":"Group Stage","match_number":1},
+    {"id":"D-MD2-1","stage":"Group Stage","group":"D","matchday":2,"home_id":"AUS","away_id":"TUR","ko_round":"Group Stage","match_number":2},
+    {"id":"D-MD2-2","stage":"Group Stage","group":"D","matchday":2,"home_id":"PAR","away_id":"USA","ko_round":"Group Stage","match_number":2},
+    {"id":"D-MD3-1","stage":"Group Stage","group":"D","matchday":3,"home_id":"AUS","away_id":"USA","ko_round":"Group Stage","match_number":3},
+    {"id":"D-MD3-2","stage":"Group Stage","group":"D","matchday":3,"home_id":"TUR","away_id":"PAR","ko_round":"Group Stage","match_number":3},
+    # ── GROUP E: Curaçao, Ecuador, Germany, Ivory Coast ───────────────────
+    {"id":"E-MD1-1","stage":"Group Stage","group":"E","matchday":1,"home_id":"CUW","away_id":"ECU","ko_round":"Group Stage","match_number":1},
+    {"id":"E-MD1-2","stage":"Group Stage","group":"E","matchday":1,"home_id":"GER","away_id":"CIV","ko_round":"Group Stage","match_number":1},
+    {"id":"E-MD2-1","stage":"Group Stage","group":"E","matchday":2,"home_id":"CUW","away_id":"GER","ko_round":"Group Stage","match_number":2},
+    {"id":"E-MD2-2","stage":"Group Stage","group":"E","matchday":2,"home_id":"ECU","away_id":"CIV","ko_round":"Group Stage","match_number":2},
+    {"id":"E-MD3-1","stage":"Group Stage","group":"E","matchday":3,"home_id":"CUW","away_id":"CIV","ko_round":"Group Stage","match_number":3},
+    {"id":"E-MD3-2","stage":"Group Stage","group":"E","matchday":3,"home_id":"GER","away_id":"ECU","ko_round":"Group Stage","match_number":3},
+    # ── GROUP F: Japan, Netherlands, Sweden, Tunisia ──────────────────────
+    {"id":"F-MD1-1","stage":"Group Stage","group":"F","matchday":1,"home_id":"JPN","away_id":"NED","ko_round":"Group Stage","match_number":1},
+    {"id":"F-MD1-2","stage":"Group Stage","group":"F","matchday":1,"home_id":"SWE","away_id":"TUN","ko_round":"Group Stage","match_number":1},
+    {"id":"F-MD2-1","stage":"Group Stage","group":"F","matchday":2,"home_id":"JPN","away_id":"SWE","ko_round":"Group Stage","match_number":2},
+    {"id":"F-MD2-2","stage":"Group Stage","group":"F","matchday":2,"home_id":"NED","away_id":"TUN","ko_round":"Group Stage","match_number":2},
+    {"id":"F-MD3-1","stage":"Group Stage","group":"F","matchday":3,"home_id":"JPN","away_id":"TUN","ko_round":"Group Stage","match_number":3},
+    {"id":"F-MD3-2","stage":"Group Stage","group":"F","matchday":3,"home_id":"NED","away_id":"SWE","ko_round":"Group Stage","match_number":3},
+    # ── GROUP G: Belgium, Egypt, Iran, New Zealand ────────────────────────
+    {"id":"G-MD1-1","stage":"Group Stage","group":"G","matchday":1,"home_id":"BEL","away_id":"EGY","ko_round":"Group Stage","match_number":1},
+    {"id":"G-MD1-2","stage":"Group Stage","group":"G","matchday":1,"home_id":"IRN","away_id":"NZL","ko_round":"Group Stage","match_number":1},
+    {"id":"G-MD2-1","stage":"Group Stage","group":"G","matchday":2,"home_id":"BEL","away_id":"IRN","ko_round":"Group Stage","match_number":2},
+    {"id":"G-MD2-2","stage":"Group Stage","group":"G","matchday":2,"home_id":"EGY","away_id":"NZL","ko_round":"Group Stage","match_number":2},
+    {"id":"G-MD3-1","stage":"Group Stage","group":"G","matchday":3,"home_id":"BEL","away_id":"NZL","ko_round":"Group Stage","match_number":3},
+    {"id":"G-MD3-2","stage":"Group Stage","group":"G","matchday":3,"home_id":"EGY","away_id":"IRN","ko_round":"Group Stage","match_number":3},
+    # ── GROUP H: Cape Verde, Saudi Arabia, Spain, Uruguay ─────────────────
+    {"id":"H-MD1-1","stage":"Group Stage","group":"H","matchday":1,"home_id":"CPV","away_id":"SAU","ko_round":"Group Stage","match_number":1},
+    {"id":"H-MD1-2","stage":"Group Stage","group":"H","matchday":1,"home_id":"ESP","away_id":"URU","ko_round":"Group Stage","match_number":1},
+    {"id":"H-MD2-1","stage":"Group Stage","group":"H","matchday":2,"home_id":"CPV","away_id":"ESP","ko_round":"Group Stage","match_number":2},
+    {"id":"H-MD2-2","stage":"Group Stage","group":"H","matchday":2,"home_id":"SAU","away_id":"URU","ko_round":"Group Stage","match_number":2},
+    {"id":"H-MD3-1","stage":"Group Stage","group":"H","matchday":3,"home_id":"CPV","away_id":"URU","ko_round":"Group Stage","match_number":3},
+    {"id":"H-MD3-2","stage":"Group Stage","group":"H","matchday":3,"home_id":"ESP","away_id":"SAU","ko_round":"Group Stage","match_number":3},
+    # ── GROUP I: France, Iraq, Norway, Senegal ────────────────────────────
+    {"id":"I-MD1-1","stage":"Group Stage","group":"I","matchday":1,"home_id":"FRA","away_id":"IRQ","ko_round":"Group Stage","match_number":1},
+    {"id":"I-MD1-2","stage":"Group Stage","group":"I","matchday":1,"home_id":"NOR","away_id":"SEN","ko_round":"Group Stage","match_number":1},
+    {"id":"I-MD2-1","stage":"Group Stage","group":"I","matchday":2,"home_id":"FRA","away_id":"NOR","ko_round":"Group Stage","match_number":2},
+    {"id":"I-MD2-2","stage":"Group Stage","group":"I","matchday":2,"home_id":"IRQ","away_id":"SEN","ko_round":"Group Stage","match_number":2},
+    {"id":"I-MD3-1","stage":"Group Stage","group":"I","matchday":3,"home_id":"FRA","away_id":"SEN","ko_round":"Group Stage","match_number":3},
+    {"id":"I-MD3-2","stage":"Group Stage","group":"I","matchday":3,"home_id":"NOR","away_id":"IRQ","ko_round":"Group Stage","match_number":3},
+    # ── GROUP J: Algeria, Argentina, Austria, Jordan ──────────────────────
+    {"id":"J-MD1-1","stage":"Group Stage","group":"J","matchday":1,"home_id":"ALG","away_id":"ARG","ko_round":"Group Stage","match_number":1},
+    {"id":"J-MD1-2","stage":"Group Stage","group":"J","matchday":1,"home_id":"AUT","away_id":"JOR","ko_round":"Group Stage","match_number":1},
+    {"id":"J-MD2-1","stage":"Group Stage","group":"J","matchday":2,"home_id":"ALG","away_id":"AUT","ko_round":"Group Stage","match_number":2},
+    {"id":"J-MD2-2","stage":"Group Stage","group":"J","matchday":2,"home_id":"ARG","away_id":"JOR","ko_round":"Group Stage","match_number":2},
+    {"id":"J-MD3-1","stage":"Group Stage","group":"J","matchday":3,"home_id":"ALG","away_id":"JOR","ko_round":"Group Stage","match_number":3},
+    {"id":"J-MD3-2","stage":"Group Stage","group":"J","matchday":3,"home_id":"ARG","away_id":"AUT","ko_round":"Group Stage","match_number":3},
+    # ── GROUP K: Colombia, DR Congo, Portugal, Uzbekistan ─────────────────
+    {"id":"K-MD1-1","stage":"Group Stage","group":"K","matchday":1,"home_id":"COL","away_id":"COD","ko_round":"Group Stage","match_number":1},
+    {"id":"K-MD1-2","stage":"Group Stage","group":"K","matchday":1,"home_id":"POR","away_id":"UZB","ko_round":"Group Stage","match_number":1},
+    {"id":"K-MD2-1","stage":"Group Stage","group":"K","matchday":2,"home_id":"COL","away_id":"POR","ko_round":"Group Stage","match_number":2},
+    {"id":"K-MD2-2","stage":"Group Stage","group":"K","matchday":2,"home_id":"COD","away_id":"UZB","ko_round":"Group Stage","match_number":2},
+    {"id":"K-MD3-1","stage":"Group Stage","group":"K","matchday":3,"home_id":"COL","away_id":"UZB","ko_round":"Group Stage","match_number":3},
+    {"id":"K-MD3-2","stage":"Group Stage","group":"K","matchday":3,"home_id":"POR","away_id":"COD","ko_round":"Group Stage","match_number":3},
+    # ── GROUP L: Croatia, England, Ghana, Panama ──────────────────────────
+    {"id":"L-MD1-1","stage":"Group Stage","group":"L","matchday":1,"home_id":"CRO","away_id":"ENG","ko_round":"Group Stage","match_number":1},
+    {"id":"L-MD1-2","stage":"Group Stage","group":"L","matchday":1,"home_id":"GHA","away_id":"PAN","ko_round":"Group Stage","match_number":1},
+    {"id":"L-MD2-1","stage":"Group Stage","group":"L","matchday":2,"home_id":"CRO","away_id":"GHA","ko_round":"Group Stage","match_number":2},
+    {"id":"L-MD2-2","stage":"Group Stage","group":"L","matchday":2,"home_id":"ENG","away_id":"PAN","ko_round":"Group Stage","match_number":2},
+    {"id":"L-MD3-1","stage":"Group Stage","group":"L","matchday":3,"home_id":"CRO","away_id":"PAN","ko_round":"Group Stage","match_number":3},
+    {"id":"L-MD3-2","stage":"Group Stage","group":"L","matchday":3,"home_id":"ENG","away_id":"GHA","ko_round":"Group Stage","match_number":3},
+    # ── ROUND OF 32 — slot IDs (resolved dynamically post group stage) ─────
+    {"id":"R32-1", "stage":"Round of 32","group":None,"matchday":None,"home_id":"1A","away_id":"2B","ko_round":"Round of 32","match_number":3},
+    {"id":"R32-2", "stage":"Round of 32","group":None,"matchday":None,"home_id":"1B","away_id":"2A","ko_round":"Round of 32","match_number":3},
+    {"id":"R32-3", "stage":"Round of 32","group":None,"matchday":None,"home_id":"1C","away_id":"2D","ko_round":"Round of 32","match_number":3},
+    {"id":"R32-4", "stage":"Round of 32","group":None,"matchday":None,"home_id":"1D","away_id":"2C","ko_round":"Round of 32","match_number":3},
+    {"id":"R32-5", "stage":"Round of 32","group":None,"matchday":None,"home_id":"1E","away_id":"2F","ko_round":"Round of 32","match_number":3},
+    {"id":"R32-6", "stage":"Round of 32","group":None,"matchday":None,"home_id":"1F","away_id":"2E","ko_round":"Round of 32","match_number":3},
+    {"id":"R32-7", "stage":"Round of 32","group":None,"matchday":None,"home_id":"1G","away_id":"2H","ko_round":"Round of 32","match_number":3},
+    {"id":"R32-8", "stage":"Round of 32","group":None,"matchday":None,"home_id":"1H","away_id":"2G","ko_round":"Round of 32","match_number":3},
+    {"id":"R32-9", "stage":"Round of 32","group":None,"matchday":None,"home_id":"1I","away_id":"2J","ko_round":"Round of 32","match_number":3},
+    {"id":"R32-10","stage":"Round of 32","group":None,"matchday":None,"home_id":"1J","away_id":"2I","ko_round":"Round of 32","match_number":3},
+    {"id":"R32-11","stage":"Round of 32","group":None,"matchday":None,"home_id":"1K","away_id":"2L","ko_round":"Round of 32","match_number":3},
+    {"id":"R32-12","stage":"Round of 32","group":None,"matchday":None,"home_id":"1L","away_id":"2K","ko_round":"Round of 32","match_number":3},
+    {"id":"R32-13","stage":"Round of 32","group":None,"matchday":None,"home_id":"T3-1","away_id":"T3-2","ko_round":"Round of 32","match_number":3},
+    {"id":"R32-14","stage":"Round of 32","group":None,"matchday":None,"home_id":"T3-3","away_id":"T3-4","ko_round":"Round of 32","match_number":3},
+    {"id":"R32-15","stage":"Round of 32","group":None,"matchday":None,"home_id":"T3-5","away_id":"T3-6","ko_round":"Round of 32","match_number":3},
+    {"id":"R32-16","stage":"Round of 32","group":None,"matchday":None,"home_id":"T3-7","away_id":"T3-8","ko_round":"Round of 32","match_number":3},
+    # ── ROUND OF 16 ───────────────────────────────────────────────────────
+    {"id":"R16-1","stage":"Round of 16","group":None,"matchday":None,"home_id":"W-R32-1","away_id":"W-R32-2","ko_round":"Round of 16","match_number":4},
+    {"id":"R16-2","stage":"Round of 16","group":None,"matchday":None,"home_id":"W-R32-3","away_id":"W-R32-4","ko_round":"Round of 16","match_number":4},
+    {"id":"R16-3","stage":"Round of 16","group":None,"matchday":None,"home_id":"W-R32-5","away_id":"W-R32-6","ko_round":"Round of 16","match_number":4},
+    {"id":"R16-4","stage":"Round of 16","group":None,"matchday":None,"home_id":"W-R32-7","away_id":"W-R32-8","ko_round":"Round of 16","match_number":4},
+    {"id":"R16-5","stage":"Round of 16","group":None,"matchday":None,"home_id":"W-R32-9","away_id":"W-R32-10","ko_round":"Round of 16","match_number":4},
+    {"id":"R16-6","stage":"Round of 16","group":None,"matchday":None,"home_id":"W-R32-11","away_id":"W-R32-12","ko_round":"Round of 16","match_number":4},
+    {"id":"R16-7","stage":"Round of 16","group":None,"matchday":None,"home_id":"W-R32-13","away_id":"W-R32-14","ko_round":"Round of 16","match_number":4},
+    {"id":"R16-8","stage":"Round of 16","group":None,"matchday":None,"home_id":"W-R32-15","away_id":"W-R32-16","ko_round":"Round of 16","match_number":4},
+    # ── QUARTER-FINALS ────────────────────────────────────────────────────
+    {"id":"QF-1","stage":"Quarter-finals","group":None,"matchday":None,"home_id":"W-R16-1","away_id":"W-R16-2","ko_round":"Quarter-finals","match_number":5},
+    {"id":"QF-2","stage":"Quarter-finals","group":None,"matchday":None,"home_id":"W-R16-3","away_id":"W-R16-4","ko_round":"Quarter-finals","match_number":5},
+    {"id":"QF-3","stage":"Quarter-finals","group":None,"matchday":None,"home_id":"W-R16-5","away_id":"W-R16-6","ko_round":"Quarter-finals","match_number":5},
+    {"id":"QF-4","stage":"Quarter-finals","group":None,"matchday":None,"home_id":"W-R16-7","away_id":"W-R16-8","ko_round":"Quarter-finals","match_number":5},
+    # ── SEMI-FINALS ───────────────────────────────────────────────────────
+    {"id":"SF-1","stage":"Semi-finals","group":None,"matchday":None,"home_id":"W-QF-1","away_id":"W-QF-2","ko_round":"Semi-finals","match_number":6},
+    {"id":"SF-2","stage":"Semi-finals","group":None,"matchday":None,"home_id":"W-QF-3","away_id":"W-QF-4","ko_round":"Semi-finals","match_number":6},
+    # ── THIRD PLACE ───────────────────────────────────────────────────────
+    {"id":"3RD","stage":"Third place","group":None,"matchday":None,"home_id":"L-SF-1","away_id":"L-SF-2","ko_round":"Third place","match_number":7},
+    # ── FINAL ─────────────────────────────────────────────────────────────
+    {"id":"FINAL","stage":"Final","group":None,"matchday":None,"home_id":"W-SF-1","away_id":"W-SF-2","ko_round":"Final","match_number":8},
+]
 
+def get_fixtures_by_stage(stage: str) -> List[Dict]:
+    """Return all fixtures for a given stage."""
+    return [f for f in FIXTURES if f["stage"] == stage]
 
-def get_player(player_id: str) -> Dict:
-    """Return a single player by id."""
-    return next((p for p in PLAYERS if p["id"] == player_id), {})
+def get_fixtures_by_group(group: str) -> List[Dict]:
+    """Return all group stage fixtures for a given group."""
+    return [f for f in FIXTURES if f.get("group") == group]
 
-
-def get_team(team_id: str) -> Dict:
-    """Return a single team by id."""
-    return next((t for t in TEAMS if t["id"] == team_id), {})
+def get_fixture(fixture_id: str) -> Dict:
+    """Return a single fixture by ID."""
+    return next((f for f in FIXTURES if f["id"] == fixture_id), {})
