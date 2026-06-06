@@ -52,3 +52,17 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 timeout: '1800s'
+
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: allow-unauthenticated
+    entrypoint: gcloud
+    args:
+      - beta
+      - run
+      - services
+      - add-iam-policy-binding
+      - '${_SERVICE}'
+      - '--region=${_REGION}'
+      - '--member=allUsers'
+      - '--role=roles/run.invoker'
+    waitFor: ['deploy']
