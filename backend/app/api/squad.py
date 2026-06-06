@@ -1,5 +1,5 @@
-from app.data.seed_data import TEAMS, FIXTURES, get_fixtures_by_stage, get_fixtures_by_group
 from app.data.seed_data import SRR_DATA, FIXTURES, get_fixtures_by_group
+from app.data.seed_data import TEAMS, FIXTURES, get_fixtures_by_stage, get_fixtures_by_group
 from fastapi import APIRouter, Query
 from app.data.seed_data import TEAMS
 
