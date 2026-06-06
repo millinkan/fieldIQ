@@ -1,7 +1,3 @@
-# FieldIQ — GCP Cloud Build: test → push → Cloud Run staging
-# Run: gcloud builds submit --config=cloudbuild.yaml .
-# Image tag uses BUILD_ID (always set). SHORT_SHA is empty for local submit.
-# Docs: docs/GCP-STAGING.md
 substitutions:
   _REGION: europe-west1
   _PROJECT: fieldiq-498301
@@ -47,13 +43,7 @@ steps:
       - '--set-env-vars=PYTHONUNBUFFERED=1,LIVE_DATA_PROVIDER=mock,SERVE_FRONTEND=true'
     waitFor: ['push']
 
-options:
-  machineType: 'E2_HIGHCPU_8'
-  logging: CLOUD_LOGGING_ONLY
-
-timeout: '1800s'
-
-- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: allow-unauthenticated
     entrypoint: gcloud
     args:
@@ -66,3 +56,9 @@ timeout: '1800s'
       - '--member=allUsers'
       - '--role=roles/run.invoker'
     waitFor: ['deploy']
+
+options:
+  machineType: 'E2_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: '1800s'
