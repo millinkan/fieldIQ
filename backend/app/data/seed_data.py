@@ -1587,3 +1587,16 @@ def get_fixtures_by_group(group: str) -> List[Dict]:
 def get_fixture(fixture_id: str) -> Dict:
     """Return a single fixture by ID."""
     return next((f for f in FIXTURES if f["id"] == fixture_id), {})
+
+def get_team_squad(team_id: str) -> List[Dict]:
+    """Return all players for a given team_id."""
+    return [p for p in PLAYERS if p["team_id"] == team_id]
+
+def get_player(player_id: str) -> Dict:
+    """Return a single player by id."""
+    return next((p for p in PLAYERS if p["id"] == player_id), {})
+
+
+def get_team(team_id: str) -> Dict:
+    """Return a single team by id."""
+    return next((t for t in TEAMS if t["id"] == team_id), {})
