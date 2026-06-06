@@ -194,13 +194,36 @@ def compute_delta(req: DeltaRequest):
 
 @router.get("/fixtures")
 def command_center_fixtures():
-    """Return the fixture list for the command center delta grid."""
-    fixtures = [
-        {"id": "BRA-FRA", "home_id": "BRA", "away_id": "FRA", "round": "Quarter-finals", "match_number": 5},
-        {"id": "ENG-ESP", "home_id": "ENG", "away_id": "ESP", "round": "Quarter-finals", "match_number": 5},
-        {"id": "ARG-GER", "home_id": "ARG", "away_id": "GER", "round": "Round of 16",    "match_number": 4},
-        {"id": "POR-NED", "home_id": "POR", "away_id": "NED", "round": "Round of 16",    "match_number": 4},
-        {"id": "FRA-ESP", "home_id": "FRA", "away_id": "ESP", "round": "Semi-finals",    "match_number": 6},
-        {"id": "BRA-ARG", "home_id": "BRA", "away_id": "ARG", "round": "Semi-finals",    "match_number": 6},
-    ]
-    return {"fixtures": fixtures, "count": len(fixtures)}
+from app.data.seed_data import FIXTURES, get_fixtures_by_stage, get_fixtures_by_group
+
+@router.get("/fixtures")
+def command_center_fixtures(stage: str = None, group: str = None):
+    """
+    Return fixtures for the command center delta grid.
+    - No params: returns all 104 fixtures
+    - ?stage=Group Stage: returns all 72 group matches
+    - ?stage=Quarter-finals: returns QF fixtures
+    - ?group=A: returns Group A fixtures only
+    """
+    if group:
+        fixtures = get_fixtures_by_group(group.upper())
+    elif stage:
+        fixtures = get_fixtures_by_stage(stage)
+    else:
+        fixtures = FIXTURES
+
+    # For group stage matches, only return ones with real team IDs
+    # For KO rounds, return slot notation so frontend can show bracket
+    return {
+        "fixtures": fixtures,
+        "count": len(fixtures),
+        "stages": {
+            "Group Stage": 72,
+            "Round of 32": 16,
+            "Round of 16": 8,
+            "Quarter-finals": 4,
+            "Semi-finals": 2,
+            "Third place": 1,
+            "Final": 1,
+        }
+    }
