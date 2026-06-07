@@ -4,13 +4,17 @@
 #
 
 app = 'fieldiq-api'
-primary_region = 'iad'
+primary_region = 'lhr'
 
 [build]
-  builder = 'paketobuildpacks/builder:base'
+  #builder = 'paketobuildpacks/builder:base'
+    dockerfile = 'backend/Dockerfile'
 
 [env]
   PORT = '8080'
+  PYTHONUNBUFFERED = '1'
+  LIVE_DATA_PROVIDER = 'mock'
+  SERVE_FRONTEND = 'true'
 
 [http_service]
   internal_port = 8080
@@ -21,7 +25,7 @@ primary_region = 'iad'
   processes = ['app']
 
 [[vm]]
-  memory = '1gb'
+  memory = '2gb'
   cpu_kind = 'shared'
-  cpus = 1
-  memory_mb = 256
+  cpus = 2
+  memory_mb = 512
