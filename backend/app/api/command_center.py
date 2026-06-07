@@ -15,6 +15,9 @@ from app.services.prediction import predict_match
 from app.services.fatigue_engine import compute_travel_decay
 from app.services.momentum_engine import get_momentum_profile
 from app.services.tactical_engine  import compute_tactical_neutralisation
+from app.services.climate_engine   import compute_climate_delta, compute_schedule_hardship
+from app.services.referee_engine   import compute_referee_impact
+from app.services.schedule_engine  import compute_schedule_delta
 
 router = APIRouter()
 
