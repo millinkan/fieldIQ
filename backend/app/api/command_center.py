@@ -8,12 +8,11 @@ from pydantic import BaseModel
 from typing import Dict, List, Optional
 import numpy as np
 
-#from app.data.seed_data import TEAMS
 from app.data.seed_data import TEAMS, FIXTURES, get_fixtures_by_stage, get_fixtures_by_group
-from app.core.exceptions import NotFoundError
-from app.services.prediction import predict_match
-from app.services.fatigue_engine import compute_travel_decay
-from app.services.momentum_engine import get_momentum_profile
+from app.services.prediction import predict_match, build_feature_vector
+from app.services.fatigue_engine   import compute_travel_decay
+from app.services.chemistry_engine import compute_club_chemistry, compute_xt_compatibility
+from app.services.momentum_engine  import compute_clutch_rating, get_momentum_profile
 from app.services.tactical_engine  import compute_tactical_neutralisation
 from app.services.climate_engine   import compute_climate_delta, compute_schedule_hardship
 from app.services.referee_engine   import compute_referee_impact
@@ -53,10 +52,8 @@ def compute_delta(req: DeltaRequest):
     team_a = TEAM_MAP.get(req.home_id)
     team_b = TEAM_MAP.get(req.away_id)
 
-    if not team_a:
-        raise NotFoundError("Team", req.home_id)
-    if not team_b:
-        raise NotFoundError("Team", req.away_id)
+    if not team_a or not team_b:
+        return {"error": f"Team not found: {req.home_id} or {req.away_id}"}
 
     # ── FieldIQ probabilities ──────────────────────────────────────────────
     probs = predict_match(
@@ -198,32 +195,251 @@ def compute_delta(req: DeltaRequest):
 
 @router.get("/fixtures")
 def command_center_fixtures(stage: str = None, group: str = None):
-    """
-    Return fixtures for the command center delta grid.
-    - No params: returns all 104 fixtures
-    - ?stage=Group Stage: returns all 72 group matches
-    - ?stage=Quarter-finals: returns QF fixtures
-    - ?group=A: returns Group A fixtures only
-    """
+    """Return all 104 WC 2026 fixtures. Filter by ?stage= or ?group="""
     if group:
         fixtures = get_fixtures_by_group(group.upper())
     elif stage:
         fixtures = get_fixtures_by_stage(stage)
     else:
         fixtures = FIXTURES
-
-    # For group stage matches, only return ones with real team IDs
-    # For KO rounds, return slot notation so frontend can show bracket
     return {
         "fixtures": fixtures,
         "count": len(fixtures),
         "stages": {
-            "Group Stage": 72,
-            "Round of 32": 16,
-            "Round of 16": 8,
-            "Quarter-finals": 4,
-            "Semi-finals": 2,
-            "Third place": 1,
-            "Final": 1,
+            "Group Stage": 72, "Round of 32": 16, "Round of 16": 8,
+            "Quarter-finals": 4, "Semi-finals": 2, "Third place": 1, "Final": 1,
         }
     }
+
+# ── Layer 5/6/7 engines ───────────────────────────────────────────────────
+
+
+class DeepDeltaRequest(BaseModel):
+    home_id:            str
+    away_id:            str
+    group:              str
+    matchday:           int = 1
+    ko_round:           Optional[str] = None
+    match_number:       int = 3
+    rest_hours_a:       float = 120.0
+    rest_hours_b:       float = 120.0
+    fixture_id:         Optional[str] = None
+    ref_name:           Optional[str] = None
+    ref_confederation:  Optional[str] = None
+    market_odds:        Optional[Dict] = None
+
+
+@router.post("/deep-delta")
+def compute_deep_delta(req: DeepDeltaRequest):
+    """
+    Full FieldIQ intelligence stack — all 7 layers combined.
+    Layers 1-4: existing (fatigue, chemistry, momentum, tactical)
+    Layer 5: climate asymmetry
+    Layer 6: referee variance
+    Layer 7: schedule hardship
+
+    Returns everything needed for the Discord intelligence post.
+    """
+    team_a = TEAM_MAP.get(req.home_id)
+    team_b = TEAM_MAP.get(req.away_id)
+    if not team_a or not team_b:
+        return {"error": f"Unknown team: {req.home_id} or {req.away_id}"}
+
+    # ── Existing layers 1-4 ───────────────────────────────────────────────
+    probs = predict_match(
+        team_a, team_b,
+        match_number=req.match_number,
+        ko_round=req.ko_round,
+        rest_hours_a=req.rest_hours_a,
+        rest_hours_b=req.rest_hours_b,
+    )
+    p_home, p_draw, p_away = float(probs[0]), float(probs[1]), float(probs[2])
+
+    # Market
+    market = req.market_odds or MOCK_MARKET_ODDS.get(req.home_id, {
+        "home_win": 0.40, "draw": 0.24, "away_win": 0.36
+    })
+    m_home = market.get("home_win", 0.40)
+    m_draw = market.get("draw", 0.24)
+    m_away = market.get("away_win", 0.36)
+
+    delta_home  = round(p_home - m_home, 4)
+    vig         = 0.048
+    edge_score  = round(delta_home - (vig/2 if delta_home > 0 else -vig/2), 4)
+    kelly_full  = round(edge_score / (1 - m_home), 4) if edge_score > 0 else 0.0
+    kelly_q     = round(kelly_full * 0.25, 4)
+
+    fa = compute_travel_decay(req.home_id, req.match_number, req.ko_round, req.rest_hours_a)
+    fb = compute_travel_decay(req.away_id, req.match_number, req.ko_round, req.rest_hours_b)
+
+    tactical    = compute_tactical_neutralisation(team_a, team_b)
+    pa          = get_momentum_profile(req.home_id)
+    pb          = get_momentum_profile(req.away_id)
+
+    # ── Layer 5: Climate ──────────────────────────────────────────────────
+    climate = compute_climate_delta(
+        req.home_id, req.away_id,
+        venue="new_york",  # fallback — overridden by fixture_id if provided
+        fixture_id=req.fixture_id,
+        ko_round=req.ko_round,
+    )
+
+    # ── Layer 6: Referee ──────────────────────────────────────────────────
+    referee = compute_referee_impact(
+        req.home_id, req.away_id,
+        home_pdv=team_a.get("pdv", 1.0),
+        away_pdv=team_b.get("pdv", 1.0),
+        home_srr=team_a.get("srr", 60),
+        away_srr=team_b.get("srr", 60),
+        ref_name=req.ref_name,
+        ref_confederation=req.ref_confederation,
+        ko_round=req.ko_round,
+    )
+
+    # ── Layer 7: Schedule hardship ────────────────────────────────────────
+    schedule = compute_schedule_delta(
+        req.home_id, req.away_id,
+        group=req.group,
+        matchday=req.matchday,
+    )
+
+    # ── Composite adjusted probabilities ─────────────────────────────────
+    # Climate and schedule deltas nudge the base probabilities
+    climate_adj  = climate["climate_delta"] * 0.30
+    schedule_adj = schedule["schedule_delta"] * 0.20
+    ref_adj      = referee["prob_shift"] * (1 if referee["disciplined_team_edge"] == "home" else -1)
+
+    p_home_adj = max(0.05, min(0.90, p_home + climate_adj + schedule_adj + ref_adj))
+    p_away_adj = max(0.05, min(0.90, p_away - climate_adj - schedule_adj))
+    p_draw_adj = max(0.05, 1.0 - p_home_adj - p_away_adj)
+    total_adj  = p_home_adj + p_draw_adj + p_away_adj
+    p_home_adj /= total_adj; p_draw_adj /= total_adj; p_away_adj /= total_adj
+
+    # Adjusted edge
+    adj_delta       = round(p_home_adj - m_home, 4)
+    adj_edge_score  = round(adj_delta - (vig/2 if adj_delta > 0 else -vig/2), 4)
+    adj_kelly       = round(adj_edge_score / (1 - m_home), 4) if adj_edge_score > 0 else 0.0
+
+    # ── Value label ───────────────────────────────────────────────────────
+    def value_label(edge):
+        if abs(edge) > 0.06: return "STRONG_VALUE"
+        if abs(edge) > 0.02: return "MILD_VALUE"
+        if abs(edge) > -0.01: return "FAIR_PRICE"
+        return "OVERPRICED"
+
+    return {
+        "version":      "7.0",
+        "match": {
+            "home_id":   req.home_id, "away_id":  req.away_id,
+            "home_name": team_a["name"], "away_name": team_b["name"],
+            "home_flag": team_a["flag"], "away_flag": team_b["flag"],
+            "group": req.group, "matchday": req.matchday,
+        },
+
+        # ── Base probabilities (MLP layers 1-4) ────────────────────────
+        "base": {
+            "p_home": round(p_home, 4), "p_draw": round(p_draw, 4), "p_away": round(p_away, 4),
+            "market_home": m_home, "market_draw": m_draw, "market_away": m_away,
+            "delta": delta_home, "edge_score": edge_score,
+            "kelly_quarter": kelly_q,
+            "value_label": value_label(edge_score),
+        },
+
+        # ── Adjusted probabilities (all 7 layers) ─────────────────────
+        "adjusted": {
+            "p_home": round(p_home_adj, 4),
+            "p_draw": round(p_draw_adj, 4),
+            "p_away": round(p_away_adj, 4),
+            "delta": adj_delta,
+            "edge_score": adj_edge_score,
+            "kelly_quarter": round(adj_kelly * 0.25, 4),
+            "value_label": value_label(adj_edge_score),
+            "climate_contribution":  round(climate_adj, 4),
+            "schedule_contribution": round(schedule_adj, 4),
+            "referee_contribution":  round(ref_adj, 4),
+        },
+
+        # ── Layer 5: Climate ───────────────────────────────────────────
+        "climate": {
+            "venue":            climate["venue"],
+            "temp_c":           climate["temp_c"],
+            "humidity_pct":     climate["humidity_pct"],
+            "altitude_m":       climate["altitude_m"],
+            "indoor_ac":        climate["indoor_ac"],
+            "climate_delta":    climate["climate_delta"],
+            "heat_adapt_gap":   climate["heat_adapt_gap"],
+            "classification":   climate["venue_classification"],
+            "home_penalty":     climate["home_climate_penalty"],
+            "away_penalty":     climate["away_climate_penalty"],
+            "narrative":        climate["narrative"],
+        },
+
+        # ── Layer 6: Referee ───────────────────────────────────────────
+        "referee": {
+            "confederation":        referee["referee_confederation"],
+            "cards_multiplier":     referee["cards_multiplier"],
+            "penalty_multiplier":   referee["penalty_multiplier"],
+            "expected_yellows":     referee["expected_yellows"],
+            "penalty_probability":  referee["penalty_probability"],
+            "both_teams_carded":    referee["both_teams_carded_prob"],
+            "home_suspension_risk": referee["home_suspension_prob"],
+            "away_suspension_risk": referee["away_suspension_prob"],
+            "penalty_market_edge":  referee["penalty_market_edge"],
+            "cards_market_edge":    referee["cards_market_edge"],
+            "narrative":            referee["narrative"],
+        },
+
+        # ── Layer 7: Schedule hardship ─────────────────────────────────
+        "schedule": {
+            "home_hardship":      schedule["home_hardship"],
+            "away_hardship":      schedule["away_hardship"],
+            "schedule_delta":     schedule["schedule_delta"],
+            "matchday_delta":     schedule["matchday_delta"],
+            "signal":             schedule["signal_strength"],
+            "beneficiary":        schedule["beneficiary"],
+            "home_tz_shift":      schedule["home_tz_shift"],
+            "away_tz_shift":      schedule["away_tz_shift"],
+            "home_travel_km":     schedule["home_travel_km"],
+            "away_travel_km":     schedule["away_travel_km"],
+            "home_class":         schedule["home_hardship_class"],
+            "away_class":         schedule["away_hardship_class"],
+        },
+
+        # ── Fatigue layer (existing) ───────────────────────────────────
+        "fatigue": {
+            "home_cumulative": fa["cumulative_fatigue"],
+            "away_cumulative": fb["cumulative_fatigue"],
+            "home_tz_shift":   fa["tz_shift_hours"],
+            "away_tz_shift":   fb["tz_shift_hours"],
+        },
+
+        # ── Tactical layer (existing) ──────────────────────────────────
+        "tactical": {
+            "style_home":       tactical.get("style_a"),
+            "style_away":       tactical.get("style_b"),
+            "neutralisation":   tactical.get("tactical_neutralisation_score"),
+            "high_line_risk":   tactical.get("high_line_risk", False),
+        },
+    }
+
+
+@router.get("/schedule-hardship/{group}")
+def group_schedule_hardship(group: str):
+    """Return schedule hardship scores for all teams in a group."""
+    from app.data.seed_data import TEAMS
+    group_teams = [t for t in TEAMS if t.get("group", "").upper() == group.upper()]
+    results = []
+    for t in group_teams:
+        h = compute_schedule_hardship(t["id"], group.upper())
+        results.append({
+            "team": t["name"], "flag": t["flag"],
+            "hardship_score": h["schedule_hardship"],
+            "hardship_class": h["hardship_class"],
+            "tz_shift_hrs":   h["initial_tz_shift_hrs"],
+            "travel_km":      h["total_travel_km"],
+            "avg_temp_c":     h["avg_temp_c"],
+            "temp_range_c":   h["temp_range_c"],
+            "md3_penalty":    h["md3_penalty"],
+        })
+    results.sort(key=lambda x: -x["hardship_score"])
+    return {"group": group.upper(), "teams": results}
