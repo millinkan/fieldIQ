@@ -1,19 +1,18 @@
-# fly.toml app configuration file generated for fieldiq-api on 2026-06-07T08:46:07Z
+# fly.toml app configuration file generated for fieldiq-api on 2026-06-07T08:55:29Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
 app = 'fieldiq-api'
-primary_region = 'lhr'
+primary_region = 'ams'
 
 [build]
-  #builder = 'paketobuildpacks/builder:base'
-    dockerfile = 'backend/Dockerfile'
+  dockerfile = 'backend/Dockerfile'
 
 [env]
+  LIVE_DATA_PROVIDER = 'mock'
   PORT = '8080'
   PYTHONUNBUFFERED = '1'
-  LIVE_DATA_PROVIDER = 'mock'
   SERVE_FRONTEND = 'true'
 
 [http_service]
